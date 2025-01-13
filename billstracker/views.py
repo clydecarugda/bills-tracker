@@ -15,4 +15,8 @@ class LoginPage(LoginView):
   redirect_authenticated_user = True
   
   def get_success_url(self):
-    return reverse_lazy('')
+    return reverse_lazy('main')
+  
+
+def MainPage(request):
+  return render(request, 'main_page.html')
