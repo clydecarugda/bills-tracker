@@ -10,7 +10,7 @@ from .models import Bill
 
 
 class LoginPage(LoginView):
-  template_name = 'templates/login.html'
+  template_name = 'login.html'
   fields = '__all__'
   redirect_authenticated_user = True
   
