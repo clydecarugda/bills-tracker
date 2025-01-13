@@ -1,0 +1,40 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+  <div class="row">
+
+  </div>
+
+  <div class="row table-responsive">
+    <table class="table table-hover table-striped text-center align-middle">
+      <thead class="table-primary text-center">
+        <tr>
+          <th scope="col">Bill Name</th>
+          <th scope="col">Bill Type</th>
+          <th scope="col">Due Date</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Status</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        <tr>
+          {% for bill in bills %}
+
+            <td>{{ bill.name }}</td>
+            <td>{{ bill.bill_type }}</td>
+            <td>{{ bill.due_date }}</td>
+            <td>{{ bill.amount }}</td>
+            <td>{{ bill.payment_status }}</td>
+            <td><a href="#" class="btn btn-primary">Details</a></td>
+
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+  
+{% endblock content %}
+  

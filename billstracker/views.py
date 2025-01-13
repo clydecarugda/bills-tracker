@@ -24,9 +24,13 @@ def MainPage(request):
 
 class BillList(LoginRequiredMixin, ListView):
   model = Bill
+  template_name = 'bills.html'
   context_object_name = 'bills'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
   def get_context_data(self, **kwargs):
-    return super().get_context_data(**kwargs)
+    context = super().get_context_data(**kwargs)
+    context['bills'] = context['bills'].filter(user_id=self.request.user)
+    
+    return context
