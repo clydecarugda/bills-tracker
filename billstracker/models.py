@@ -8,6 +8,9 @@ class PaymentStatus(models.Model):
   def __str__(self):
     return self.name
   
+  class Meta:
+    verbose_name_plural = 'Payment Status'
+  
 
 class Bill(models.Model):
   user_id = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -43,3 +46,6 @@ class USettings(models.Model):
   
   def __str__(self):
     return self.auto_recurring
+  
+  class Meta:
+    verbose_name_plural = 'USettings'
