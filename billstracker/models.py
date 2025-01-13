@@ -17,7 +17,7 @@ class Bill(models.Model):
   name = models.CharField(max_length=30)
   bill_type = models.CharField(max_length=25, null=True, blank=True)
   description = models.TextField(null=True, blank=True)
-  due_date = models.DateField()
+  due_date = models.IntegerField(choices=[(i, i) for i in range (1, 32)], verbose_name='Due Date')
   amount = models.FloatField(default=0)
   payment_status = models.ForeignKey('PaymentStatus', on_delete=models.CASCADE)
   recurring = models.BooleanField(default=False)
