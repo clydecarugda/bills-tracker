@@ -20,3 +20,13 @@ class LoginPage(LoginView):
 
 def MainPage(request):
   return render(request, 'main_page.html')
+
+
+class BillList(LoginRequiredMixin, ListView):
+  model = Bill
+  context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+    return super().get_context_data(**kwargs)
