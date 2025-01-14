@@ -2,13 +2,22 @@
 
 {% block content %}
 
-  <div class="row">
+  <div class="row mb-3">
+    <div class="col">
+      <h2>{{ current_month }}</h2>
+    </div>
 
+    <div class="col">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." aria-describedby="button-addon2">
+        <button class="btn btn-success" type="button" id="button-addon2">Search</button>
+      </div>
+    </div>
   </div>
 
-  <div class="row table-responsive">
+  <div class="row table-responsive mb-3">
     <table class="table table-hover table-striped text-center align-middle">
-      <thead class="table-primary text-center">
+      <thead class="table-primary">
         <tr>
           <th scope="col">Bill Name</th>
           <th scope="col">Bill Type</th>
@@ -19,18 +28,18 @@
         </tr>
       </thead>
       <tbody class="table-group-divider">
+
+        {% for bill in bills %}
         <tr>
-          {% for bill in bills %}
-
-            <td>{{ bill.name }}</td>
-            <td>{{ bill.bill_type }}</td>
-            <td>{{ bill.due_date }}</td>
-            <td>{{ bill.amount }}</td>
-            <td>{{ bill.payment_status }}</td>
-            <td><a href="#" class="btn btn-primary">Details</a></td>
-
-          {% endfor %}
+          <td>{{ bill.name }}</td>
+          <td>{{ bill.bill_type }}</td>
+          <td>{{ bill.due_date }}</td>
+          <td>&#8369; {{ bill.amount }}</td>
+          <td>{{ bill.payment_status }}</td>
+          <td><a href="#" class="btn btn-outline-primary">Details</a></td>
         </tr>
+        {% endfor %}
+
       </tbody>
     </table>
 
