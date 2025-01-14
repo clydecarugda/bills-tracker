@@ -4,7 +4,7 @@ from django.http import Http404
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, CreateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
@@ -77,3 +77,19 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
       raise Http404("Product does not exist or you do not have permission to view it.")
     
     return obj
+  
+
+class CreateBill(LoginRequiredMixin, CreateView):
+  model = Bill
+  context_object_name = 'bills'
+  success_url = reverse_lazy('bills-tracker')
+  template_name = 'create_bill.html'
+  fields = '__all__'
+  success_url = reverse_lazy('bills-tracker')
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def form_valid(self, form):
+      form
+      return super().form_valid(form)
+  
