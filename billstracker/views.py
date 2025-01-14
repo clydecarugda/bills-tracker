@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
@@ -35,3 +36,11 @@ class BillList(LoginRequiredMixin, ListView):
     context['bills'] = context['bills'].filter(user_id=self.request.user)
     
     return context
+  
+
+class BillDetail(LoginRequiredMixin, DetailView):
+  model = Bill
+  template_name = 'bill.html'
+  context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'

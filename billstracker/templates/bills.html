@@ -41,7 +41,7 @@
             <td>{{ bill.due_date }}</td>
             <td>&#8369; {{ bill.amount }}</td>
             <td>{{ bill.payment_status }}</td>
-            <td><a href="#" class="btn btn-outline-primary">Details</a></td>
+            <td><a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary">Details</a></td>
           </tr>
           {% endfor %}
 
