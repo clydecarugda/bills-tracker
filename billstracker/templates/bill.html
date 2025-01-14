@@ -1,0 +1,88 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div class="row mb-3">
+  <div class="col">
+    <a href="{% url 'bills-tracker' %}" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-header">
+      <h4 class="mb-0">Bill Details</h4>
+    </div>
+    <div class="card-body">
+    
+      <!-- Bill Name -->
+      <div class="mb-3">
+        <label for="id_name" class="form-label">Name</label>
+        <input type="text" id="id_name" class="form-control" value="{{ bills.name }}" disabled readonly>
+      </div>
+    
+      <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-6">
+          <!-- Bill Type -->
+          <div class="mb-3">
+            <label for="id_bill_type" class="form-label">Bill Type</label>
+            <input type="text" id="id_bill_type" class="form-control" value="{{ bills.bill_type }}" disabled readonly>
+          </div>
+    
+          <!-- Due Date and Amount -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="id_due_date" class="form-label">Due Date</label>
+              <input type="text" id="id_due_date" class="form-control" value="{{ bills.due_date }}" disabled readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="id_amount" class="form-label">Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                <input type="text" id="id_amount" class="form-control" value="{{ bills.amount }}" disabled readonly>
+              </div>
+            </div>
+          </div>
+    
+          <!-- Status and Recurring -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="id_payment_status" class="form-label">Status</label>
+              <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="id_recurring_count" class="form-label">Recurring</label>
+              <div class="input-group mb-3">
+                <div class="input-group-text">
+                  <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" {% if bills.recurring %} checked {% endif %} disabled readonly>
+                </div>
+                <input type="text" class="form-control" id="id_recurring_count" aria-label="Text input with checkbox" disabled readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+        <!-- Right Column for Description -->
+        <div class="col-md-6">
+          <div class="form-floating mb-3">
+            <textarea id="id_description" class="form-control" style="height: 200px;" disabled readonly>{{ bills.description }}</textarea>
+            <label for="id_description">Description</label>
+          </div>
+        </div>
+      </div>
+    
+      <!-- Action Buttons -->
+      <div class="row">
+        <div class="col text-end">
+          <a href="#" class="btn btn-success">Edit</a>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+  
+{% endblock content %}
+  
