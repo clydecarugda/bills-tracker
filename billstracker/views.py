@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.http import Http404
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import DeleteView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
@@ -42,5 +44,20 @@ class BillDetail(LoginRequiredMixin, DetailView):
   model = Bill
   template_name = 'bill.html'
   context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user_id != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+
+class DeleteBill(LoginRequiredMixin, DeleteView):
+  model = Bill
+  context_object_name = 'bills'
+  success_url = reverse_lazy('bills-tracker')
   login_url = 'login'
   redirect_field_name = 'redirect_to'

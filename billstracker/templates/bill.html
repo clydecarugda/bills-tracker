@@ -56,7 +56,7 @@
               <div class="input-group-text">
                 <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" {% if bills.recurring %} checked {% endif %} disabled readonly>
               </div>
-              <input type="text" class="form-control" id="id_recurring_count" aria-label="Text input with checkbox" disabled readonly>
+              <input type="text" class="form-control" id="id_recurring_count" aria-label="Text input with checkbox" value="{{ bills.recurring_count }}" disabled readonly>
             </div>
           </div>
         </div>
@@ -75,6 +75,30 @@
     <div class="row">
       <div class="col text-end">
         <a href="#" class="btn btn-success">Edit</a>
+        <!-- Action Button -->
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Delete Bill Info</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body text-center">
+                Are you sure you want to delete <strong>{{ bills.name }}</strong>?
+              </div>
+              <div class="modal-footer">
+                <form id="deleteForm" method="POST" action="{% url 'bill-delete' bills.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Yes</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
