@@ -4,8 +4,7 @@
 
   <div class="row mb-3">
     <div class="col">
-      <h2>Bills for {{ current_month }}</h2>
-    </div>
+      <h2>Bills</h2>
   </div>
 
   <div class="row mb-3">
@@ -21,33 +20,36 @@
     </div>
   </div>
 
-  <div class="row table-responsive mb-3">
-    <table class="table table-hover table-striped text-center align-middle">
-      <thead class="table-primary">
-        <tr>
-          <th scope="col">Bill Name</th>
-          <th scope="col">Bill Type</th>
-          <th scope="col">Due Date</th>
-          <th scope="col">Amount</th>
-          <th scope="col">Status</th>
-          <th scope="col"></th>
-        </tr>
-      </thead>
-      <tbody class="table-group-divider">
+    <div class="row table-responsive mb-3">
+      <table class="table table-hover table-striped text-center align-middle">
+        <thead class="table-primary">
+          <tr>
+            <th scope="col">Bill Name</th>
+            <th scope="col">Bill Type</th>
+            <th scope="col">Due Date</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Status</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
 
-        {% for bill in bills %}
-        <tr>
-          <td>{{ bill.name }}</td>
-          <td>{{ bill.bill_type }}</td>
-          <td>{{ bill.due_date }}</td>
-          <td>&#8369; {{ bill.amount }}</td>
-          <td>{{ bill.payment_status }}</td>
-          <td><a href="#" class="btn btn-outline-primary">Details</a></td>
-        </tr>
-        {% endfor %}
+          {% for bill in bills %}
+          <tr>
+            <td>{{ bill.name }}</td>
+            <td>{{ bill.bill_type }}</td>
+            <td>{{ bill.due_date }}</td>
+            <td>&#8369; {{ bill.amount }}</td>
+            <td>{{ bill.payment_status }}</td>
+            <td><a href="#" class="btn btn-outline-primary">Details</a></td>
+          </tr>
+          {% endfor %}
 
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
+  
+  </div>
   
 {% endblock content %}
   
