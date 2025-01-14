@@ -21,6 +21,7 @@ class Bill(models.Model):
   amount = models.FloatField(default=0)
   payment_status = models.ForeignKey('PaymentStatus', on_delete=models.CASCADE)
   recurring = models.BooleanField(default=False)
+  recurring_count = models.IntegerField(default=0)
   bill_month = models.IntegerField(choices=[(i, i) for i in range (1, 13)], verbose_name='Month')
   
   def __str__(self):
