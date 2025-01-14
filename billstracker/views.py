@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-import datetime
 
 from django.views.generic.list import ListView
 from django.contrib.auth.views import LoginView
@@ -32,8 +31,7 @@ class BillList(LoginRequiredMixin, ListView):
   
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    context['bills'] = context['bills'].filter(user_id=self.request.user)
     
-    context['current_month'] = datetime.datetime.now().strftime('%B')
+    context['bills'] = context['bills'].filter(user_id=self.request.user)
     
     return context

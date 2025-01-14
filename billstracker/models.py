@@ -27,7 +27,7 @@ class Bill(models.Model):
     return self.name
   
   class Meta:
-    ordering = ['due_date']
+    ordering = ['payment_status', 'due_date']
     
 
 class PaymentMethod(models.Model):
