@@ -33,9 +33,18 @@ class BillList(LoginRequiredMixin, ListView):
   redirect_field_name = 'redirect_to'
   
   def get_context_data(self, **kwargs):
+    search_input = self.request.GET.get('search_area') or ''
     context = super().get_context_data(**kwargs)
-    
     context['bills'] = context['bills'].filter(user_id=self.request.user)
+    
+    if search_input:
+      context['bills'] = context['bills'].filter(name__contains = search_input)
+      
+      context['search_input'] = search_input
+      
+    else:
+      context['bills'] = context['bills'].filter(user_id=self.request.user)
+    
     
     return context
   
@@ -61,3 +70,10 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
   success_url = reverse_lazy('bills-tracker')
   login_url = 'login'
   redirect_field_name = 'redirect_to'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user_id != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
