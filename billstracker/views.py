@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import DeleteView, CreateView
+from django.views.generic.edit import DeleteView, CreateView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
@@ -98,3 +98,20 @@ class CreateBill(LoginRequiredMixin, CreateView):
     form.instance.user = self.request.user
     
     return super().form_valid(form)
+  
+
+class UpdateBill(LoginRequiredMixin, UpdateView):
+  model = Bill
+  context_object_name = 'bills'
+  template_name = 'edit_bill.html'
+  fields = ['name',
+            'bill_type',
+            'description',
+            'due_date',
+            'amount',
+            'payment_status']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_success_url(self):
+    return reverse_lazy('bill-view', kwargs={'pk': self.object.pk})
