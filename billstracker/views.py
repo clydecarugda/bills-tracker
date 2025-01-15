@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.http import Http404
+from datetime import datetime
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -58,7 +59,7 @@ class BillDetail(LoginRequiredMixin, DetailView):
   
   def get_object(self, queryset = None):
     obj = super().get_object(queryset=queryset)
-    if obj.user_id != self.request.user:
+    if obj.user != self.request.user:
       raise Http404("Product does not exist or you do not have permission to view it.")
     
     return obj
@@ -73,7 +74,7 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
   
   def get_object(self, queryset = None):
     obj = super().get_object(queryset=queryset)
-    if obj.user_id != self.request.user:
+    if obj.user != self.request.user:
       raise Http404("Product does not exist or you do not have permission to view it.")
     
     return obj
@@ -82,14 +83,18 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
 class CreateBill(LoginRequiredMixin, CreateView):
   model = Bill
   context_object_name = 'bills'
-  success_url = reverse_lazy('bills-tracker')
   template_name = 'create_bill.html'
-  fields = '__all__'
+  fields = ['name',
+            'bill_type',
+            'description',
+            'due_date',
+            'amount',
+            'payment_status']
   success_url = reverse_lazy('bills-tracker')
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
   def form_valid(self, form):
-      form
-      return super().form_valid(form)
-  
+    form.instance.user = self.request.user
+    
+    return super().form_valid(form)

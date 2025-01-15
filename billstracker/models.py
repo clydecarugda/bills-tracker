@@ -15,16 +15,13 @@ class PaymentStatus(models.Model):
   
 
 class Bill(models.Model):
-  user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
   bill_type = models.CharField(max_length=25, null=True, blank=True)
   description = models.TextField(null=True, blank=True)
-  due_date = models.IntegerField(choices=[(i, i) for i in range (1, 32)], verbose_name='Due Date')
-  amount = models.FloatField(default=0)
+  due_date = models.DateField()
+  amount = models.FloatField()
   payment_status = models.ForeignKey('PaymentStatus', on_delete=models.CASCADE)
-  recurring = models.BooleanField(default=False)
-  recurring_count = models.IntegerField(default=0)
-  bill_month = models.IntegerField(choices=[(i, i) for i in range (1, 13)], verbose_name='Month')
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)
   
@@ -36,7 +33,7 @@ class Bill(models.Model):
     
 
 class PaymentMethod(models.Model):
-  bill_id = models.ForeignKey(Bill, on_delete=models.CASCADE)
+  bill = models.ForeignKey(Bill, on_delete=models.CASCADE)
   method_name = models.CharField(max_length=25)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
@@ -48,7 +45,7 @@ class PaymentMethod(models.Model):
   
 
 class USettings(models.Model):
-  user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
   auto_recurring = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)

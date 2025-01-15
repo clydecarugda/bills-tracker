@@ -8,7 +8,7 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card border-primary">
   <div class="card-header">
     <h4 class="mb-0">Bill Details</h4>
   </div>
@@ -46,28 +46,17 @@
   
         <!-- Status and Recurring -->
         <div class="row">
-          <div class="col-md-6 mb-3">
+          <div class="col">
             <label for="id_payment_status" class="form-label">Status</label>
             <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="id_recurring_count" class="form-label">Recurring</label>
-            <div class="input-group mb-3">
-              <div class="input-group-text">
-                <input class="form-check-input mt-0" type="checkbox" value="" aria-label="Checkbox for following text input" {% if bills.recurring %} checked {% endif %} disabled readonly>
-              </div>
-              <input type="text" class="form-control" id="id_recurring_count" aria-label="Text input with checkbox" value="{{ bills.recurring_count }}" disabled readonly>
-            </div>
           </div>
         </div>
       </div>
   
       <!-- Right Column for Description -->
       <div class="col-md-6">
-        <div class="form-floating mb-3">
-          <textarea id="id_description" class="form-control" style="height: 200px;" disabled readonly>{{ bills.description }}</textarea>
-          <label for="id_description">Description</label>
-        </div>
+        <label for="id_description" class="form-label">Description</label>
+        <textarea id="id_description" class="form-control" style="height: 200px;" disabled readonly>{{ bills.description }}</textarea>
       </div>
     </div>
   
