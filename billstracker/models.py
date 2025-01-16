@@ -20,6 +20,7 @@ class Bill(models.Model):
   bill_type = models.CharField(max_length=25, null=True, blank=True)
   description = models.TextField(null=True, blank=True)
   due_date = models.DateField()
+  amount_payable = models.FloatField()
   amount = models.FloatField()
   payment_status = models.ForeignKey('PaymentStatus', on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)

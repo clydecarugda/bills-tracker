@@ -46,32 +46,56 @@
   
         <!-- Status and Recurring -->
         <div class="row">
-          <div class="col-9">
+          <div class="col">
             <label for="id_payment_status" class="form-label">Status</label>
-            <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
-          </div>
-          <div class="col-3">
-            <!-- Payment History -->
-            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentHistory">Payment History</button>
+            <div class="input-group">
+              <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
+              <!-- Payment History -->
+              <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#paymentHistory">Payment History</button>
+            </div>
+            
 
-            <!-- Modal Payment History -->
-            <div class="modal fade" id="paymentHistory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paymentHistoryLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="paymentHistoryLabel">Payment History</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    ...
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Understood</button>
+              <!-- Modal Payment History -->
+              <div class="modal fade" id="paymentHistory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paymentHistoryLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="paymentHistoryLabel">Payment History</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="table table table-responsive">
+                        <table class="table table-hover table-striped text-center align-middle">
+                          <thead class="table-secondary">
+                            <tr>
+                              <th scope="col">Payment Method</th>
+                              <th scope="col">Paid Amount</th>
+                              <th scope="col">Fee</th>
+                              <th scope="col">Paid on</th>
+                            </tr>
+                          </thead>
+                          <tbody class="table-group-divider">
+                            {% for pays in payment %}
+
+                              <tr>
+                                <td>{{ pays.method_name }}</td>
+                                <td>{{ pays.amount }}</td>
+                                <td>{{ pays.fee_amount }}</td>
+                                <td>{{ pays.created_at }}</td>
+                              </tr>
+
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+
           </div>
         </div>
       </div>
