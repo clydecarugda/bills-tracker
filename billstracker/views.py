@@ -11,7 +11,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 
-from .models import Bill, PaymentMethod
+from .models import Bill, PaymentMethod, PaymentStatus
 
 
 class LoginPage(LoginView):
@@ -134,9 +134,27 @@ class PayBill(LoginRequiredMixin, CreateView):
     return context
   
   def form_valid(self, form):
-      form
+      with transaction.atomic():
+        bill = Bill.objects.select_for_update().get(id=self.kwargs['pk'])
+        
+        pay_amount = form.cleaned_data['amount']
+        
+        if pay_amount >= bill.amount:
+          payment_status = PaymentStatus.objects.get(name='Paid')
+          
+        else:
+          payment_status = PaymentStatus.objects.get(name='Partially Paid')
+        
+        payment_method = form.save(commit=False)
+        payment_method.bill = bill
+        payment_method.save()
+        
+        bill.payment_status = payment_status
+        bill.save()
+        
+        return redirect('bills-tracker')
       
-      return super().form_valid(form)
+      return super().form_invalid(form)
   
   def get_success_url(self):
     return reverse_lazy('bills-tracker')

@@ -46,9 +46,32 @@
   
         <!-- Status and Recurring -->
         <div class="row">
-          <div class="col">
+          <div class="col-9">
             <label for="id_payment_status" class="form-label">Status</label>
             <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
+          </div>
+          <div class="col-3">
+            <!-- Payment History -->
+            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#paymentHistory">Payment History</button>
+
+            <!-- Modal Payment History -->
+            <div class="modal fade" id="paymentHistory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paymentHistoryLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="paymentHistoryLabel">Payment History</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    ...
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Understood</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -67,10 +90,10 @@
       </div>
       <div class="col mt-3 text-end">
         <a href="{% url 'bill-update' bills.id %}" class="btn btn-success">Edit</a>
-        <!-- Action Button -->
+        <!-- Delete Button -->
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
 
-        <!-- Modal -->
+        <!-- Modal Delete-->
         <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
