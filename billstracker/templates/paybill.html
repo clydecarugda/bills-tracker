@@ -1,0 +1,92 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row mb-3">
+  <div class="col">
+    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h4 class="mb-0 text-center">Pay Bill</h4>
+  </div>
+  <div class="card-body">
+    <div class="row p-2">
+      <div class="col-7">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row mb-2">
+            <div class="col">
+              <label for="id_method_name" class="form-label">Payment Method</label>
+              <input type="text" name="{{ form.method_name.name }}" maxlength="25" class="form-control" id="id_method_name" placeholder="GCash, Cash, Credit Card, etc..." required>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-7">
+              <label for="id_amount" class="form-label">Amount to pay</label>
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                {{ form.amount|add_attrs:"class=form-control" }}
+              </div>
+            </div>
+            <div class="col-5">
+              <label for="id_fee_amount" class="form-label">Fee (If any)</label>
+              {{ form.fee_amount|add_attrs:"class=form-control" }}
+            </div>
+          </div>
+          <div class="row mt-4">
+            <div class="col-9">
+              <label for="id_total_amount" class="form-label"><strong>Total Amount:</strong></label>
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                <input type="number" class="form-control" id="id_total_amount" readonly disabled>
+              </div>
+            </div>
+          <div class="row mt-4">
+            <input type="submit" class="btn btn-success" value="Pay">
+          </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="col-5 d-flex align-items-stretch">
+        <div class="card border-success">
+          <div class="card-body">
+            <div class="row">
+              <h6><strong>Bill Name: </strong>{{ bill.name }}</h6>
+              <h7><strong>Type: </strong>{{ bill.bill_type }}</h7>
+              <h7><strong>Due Date: </strong>{{ bill.due_date }}</h7>
+              <h7><strong>Amount: </strong>{{ bill.amount }}</h7>
+              <h7><strong>Status: </strong>{{ bill.payment_status }}</h7>
+              <p></p>
+              <h7><strong>Description: </strong>{{ bill.description }}</h7>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    function updateTotal() {
+      const payamount = parseFloat(document.getElementById('id_amount').value) || 0;
+      const feeamount = parseFloat(document.getElementById('id_fee_amount').value) || 0;
+      const total = payamount + feeamount;
+
+      document.getElementById('id_total_amount').value = total;
+    }
+
+    document.getElementById('id_amount').addEventListener('input', updateTotal);
+    document.getElementById('id_fee_amount').addEventListener('input', updateTotal);
+  });
+</script>
+  
+{% endblock content %}
+  

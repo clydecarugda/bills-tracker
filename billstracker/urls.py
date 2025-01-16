@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LoginPage, MainPage, BillList, BillDetail, DeleteBill, CreateBill, UpdateBill
+from .views import LoginPage, MainPage, BillList, BillDetail, DeleteBill, CreateBill, UpdateBill, PayBill
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -12,4 +12,5 @@ urlpatterns = [
     path('delete_bill/<int:pk>', DeleteBill.as_view(), name='bill-delete'),
     path('update_bill/<int:pk>', UpdateBill.as_view(), name='bill-update'),
     path('create_bill/', CreateBill.as_view(), name='create-bill'),
+    path('pay_bill/<int:pk>', PayBill.as_view(), name='pay-bill'),
 ]

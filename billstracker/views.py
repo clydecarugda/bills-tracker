@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.http import Http404
 from datetime import datetime
+from django.db import transaction
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -10,7 +11,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login
 
-from .models import Bill
+from .models import Bill, PaymentMethod
 
 
 class LoginPage(LoginView):
@@ -115,3 +116,27 @@ class UpdateBill(LoginRequiredMixin, UpdateView):
   
   def get_success_url(self):
     return reverse_lazy('bill-view', kwargs={'pk': self.object.pk})
+
+
+class PayBill(LoginRequiredMixin, CreateView):
+  model = PaymentMethod
+  context_object_name = 'paymentmethod'
+  template_name = 'paybill.html'
+  fields = ['method_name', 'amount', 'fee_amount']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    bill_id = self.kwargs['pk']
+    context['bill'] = Bill.objects.get(pk=bill_id)
+    
+    return context
+  
+  def form_valid(self, form):
+      form
+      
+      return super().form_valid(form)
+  
+  def get_success_url(self):
+    return reverse_lazy('bills-tracker')
