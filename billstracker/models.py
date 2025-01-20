@@ -34,7 +34,7 @@ class Bill(models.Model):
     
 
 class PaymentMethod(models.Model):
-  bill = models.ForeignKey(Bill, on_delete=models.CASCADE)
+  bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
   method_name = models.CharField(max_length=25)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)

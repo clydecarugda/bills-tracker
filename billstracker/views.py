@@ -9,6 +9,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
 from django.contrib.auth import login
 
 from .models import Bill, PaymentMethod, PaymentStatus
@@ -23,8 +24,10 @@ class LoginPage(LoginView):
     return reverse_lazy('main')
   
 
-def MainPage(request):
-  return render(request, 'main_page.html')
+class MainPage(LoginRequiredMixin ,TemplateView):
+  template_name = 'main_page.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
 
 
 class BillList(LoginRequiredMixin, ListView):
@@ -38,6 +41,7 @@ class BillList(LoginRequiredMixin, ListView):
     search_input = self.request.GET.get('search_area') or ''
     context = super().get_context_data(**kwargs)
     context['bills'] = context['bills'].filter(user_id=self.request.user)
+    context['bills'] = context['bills'].filter(payment_status__name__in=['Pending', 'Overdue', 'Partially Paid'])
     
     if search_input:
       context['bills'] = context['bills'].filter(name__contains = search_input)
@@ -60,7 +64,7 @@ class BillDetail(LoginRequiredMixin, DetailView):
   
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    context['payment'] = PaymentMethod.objects.filter(bill=self.object)
+    context['payment'] = PaymentMethod.objects.filter(bill=self.kwargs['pk'])
     
     return context
   
@@ -104,13 +108,14 @@ class CreateBill(LoginRequiredMixin, CreateView):
   
   def form_valid(self, form):
     form.instance.user = self.request.user
+    form.instance.amount_payable = form.cleaned_data['amount']
     
     return super().form_valid(form)
   
 
 class UpdateBill(LoginRequiredMixin, UpdateView):
   model = Bill
-  context_object_name = 'bills'
+  context_object_name = 'bill'
   template_name = 'edit_bill.html'
   fields = ['name',
             'bill_type',
@@ -123,7 +128,28 @@ class UpdateBill(LoginRequiredMixin, UpdateView):
   
   def get_success_url(self):
     return reverse_lazy('bill-view', kwargs={'pk': self.object.pk})
-
+  
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    bill_id = self.kwargs['pk']
+    payments = PaymentMethod.objects.filter(bill=bill_id)
+    context['payments'] = payments
+    
+    return context
+  
+  def form_valid(self, form):
+    response = super().form_valid(form)
+    
+    bill_form = form.instance
+    
+    total_paid = sum(pay.amount for pay in bill_form.pays.all())
+    
+    bill_form.amount_payable = bill_form.amount - total_paid
+    
+    bill_form.save()
+      
+    return response
+  
 
 class PayBill(LoginRequiredMixin, CreateView):
   model = PaymentMethod
@@ -142,26 +168,29 @@ class PayBill(LoginRequiredMixin, CreateView):
   
   def form_valid(self, form):
       with transaction.atomic():
-        bill = Bill.objects.select_for_update().get(id=self.kwargs['pk'])
+        bill_id = self.kwargs['pk']
         
-        pay_amount = form.cleaned_data['amount']
+        bill = Bill.objects.select_for_update().get(id=bill_id)
         
-        if pay_amount >= bill.amount:
-          payment_status = PaymentStatus.objects.get(name='Paid')
-          
+        payment = form.save(commit=False)
+        payment.bill = bill
+        payment.save()
+        
+        response = super().form_valid(form)
+        
+        total_paid = sum(pay.amount for pay in bill.pays.all())
+        bill.amount_payable = bill.amount - total_paid
+        
+        if bill.amount_payable <= 0:
+          bill.payment_status = PaymentStatus.objects.get(name='Paid')
         else:
-          payment_status = PaymentStatus.objects.get(name='Partially Paid')
+          bill.payment_status = PaymentStatus.objects.get(name='Partially Paid')
         
-        payment_method = form.save(commit=False)
-        payment_method.bill = bill
-        payment_method.save()
-        
-        bill.payment_status = payment_status
         bill.save()
         
         return redirect('bills-tracker')
       
-      return super().form_invalid(form)
+      return response
   
   def get_success_url(self):
     return reverse_lazy('bills-tracker')

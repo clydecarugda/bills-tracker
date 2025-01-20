@@ -35,7 +35,10 @@
             </div>
             <div class="col-5">
               <label for="id_fee_amount" class="form-label">Fee (If any)</label>
-              {{ form.fee_amount|add_attrs:"class=form-control" }}
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                {{ form.fee_amount|add_attrs:"class=form-control" }}
+              </div>
             </div>
           </div>
           <div class="row mt-4">
@@ -61,6 +64,7 @@
               <h7><strong>Type: </strong>{{ bill.bill_type }}</h7>
               <h7><strong>Due Date: </strong>{{ bill.due_date }}</h7>
               <h7><strong>Amount: </strong>{{ bill.amount }}</h7>
+              <h7><strong>Balance due: </strong>{{ bill.amount_payable }}</h7>
               <h7><strong>Status: </strong>{{ bill.payment_status }}</h7>
               <p></p>
               <h7><strong>Description: </strong>{{ bill.description }}</h7>

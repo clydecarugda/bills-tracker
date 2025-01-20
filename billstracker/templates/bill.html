@@ -36,7 +36,7 @@
             <input type="text" id="id_due_date" class="form-control" value="{{ bills.due_date }}" disabled readonly>
           </div>
           <div class="col-md-6 mb-3">
-            <label for="id_amount" class="form-label">Amount</label>
+            <label for="id_amount" class="form-label">Total Amount</label>
             <div class="input-group">
               <span class="input-group-text">&#8369;</span>
               <input type="text" id="id_amount" class="form-control" value="{{ bills.amount }}" disabled readonly>
@@ -51,7 +51,7 @@
             <div class="input-group">
               <input type="text" id="id_payment_status" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
               <!-- Payment History -->
-              <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#paymentHistory">Payment History</button>
+              <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#paymentHistory">History</button>
             </div>
             
 
@@ -79,8 +79,8 @@
 
                               <tr>
                                 <td>{{ pays.method_name }}</td>
-                                <td>{{ pays.amount }}</td>
-                                <td>{{ pays.fee_amount }}</td>
+                                <td>&#8369; {{ pays.amount }}</td>
+                                <td>&#8369; {{ pays.fee_amount }}</td>
                                 <td>{{ pays.created_at }}</td>
                               </tr>
 
@@ -97,6 +97,13 @@
               </div>
 
           </div>
+          <div class="col">
+            <label for="id_amount_payable" class="form-label">Balance</label>
+            <div class="input-group">
+              <span class="input-group-text">&#8369;</span>
+              <input type="text" id="id_amount_payable" class="form-control" value="{{ bills.amount_payable }}" disabled readonly>
+            </div>
+          </div>
         </div>
       </div>
   
@@ -110,7 +117,7 @@
     <!-- Action Buttons -->
     <div class="row">
       <div class="col mt-3">
-        <a href="{% url 'pay-bill' bills.id %}" class="btn btn-info">Pay</a>
+        <a href="{% url 'pay-bill' bills.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
       </div>
       <div class="col mt-3 text-end">
         <a href="{% url 'bill-update' bills.id %}" class="btn btn-success">Edit</a>
