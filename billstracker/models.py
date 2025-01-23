@@ -41,9 +41,6 @@ class BillDetail(models.Model):
   
   def __str__(self):
     return self.name
-  
-  class Meta:
-    ordering = ['payment_status', 'due_date']
     
 
 class BillAmount(models.Model):
@@ -57,6 +54,9 @@ class BillAmount(models.Model):
   
   def __str__(self):
     return self.bill
+  
+  class Meta:
+    ordering = ['payment_status', 'due_date']
 
 
 class PaymentMethod(models.Model):
