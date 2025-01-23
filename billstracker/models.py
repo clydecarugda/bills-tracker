@@ -12,12 +12,24 @@ class PaymentStatus(models.Model):
   
   class Meta:
     verbose_name_plural = 'Payment Status'
+    
+
+class BillCategory(models.Model):
+  name = models.CharField(max_length=30)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now_add=True)
+  
+  def __str__(self):
+    return self.name
+  
+  class Meta:
+    verbose_name_plural = 'Bill Categories'
   
 
 class Bill(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
-  bill_type = models.CharField(max_length=25, null=True, blank=True)
+  category = models.ForeignKey(BillCategory, on_delete=models.CASCADE)
   description = models.TextField(null=True, blank=True)
   due_date = models.DateField()
   amount_payable = models.FloatField()
@@ -35,7 +47,8 @@ class Bill(models.Model):
 
 class PaymentMethod(models.Model):
   bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
-  method_name = models.CharField(max_length=25)
+  payment_reference = models.CharField(max_length=100, null=True, blank=True)
+  payment_type = models.CharField(max_length=25)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -47,7 +60,7 @@ class PaymentMethod(models.Model):
 
 class USettings(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
-  auto_recurring = models.BooleanField(default=False)
+  auto_recurring = models.BooleanField(default=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)
   
