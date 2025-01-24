@@ -28,8 +28,8 @@
           <tr>
             <th scope="col">Bill Name</th>
             <th scope="col">Due Date</th>
-            <th scope="col">Total Amount</th>
             <th scope="col">Balance</th>
+            <th scope="col">Total Amount</th>
             <th scope="col">Status</th>
             <th scope="col"></th>
           </tr>
@@ -38,10 +38,10 @@
 
           {% for bill in bills %}
           <tr>
-            <td>{{ bill.name }}</td>
+            <td>{{ bill.bill_detail.name }}</td>
             <td>{{ bill.due_date }}</td>
-            <td>&#8369; {{ bill.amount }}</td>
             <td>&#8369; {{ bill.amount_payable }}</td>
+            <td>&#8369; {{ bill.amount }}</td>
             <td>{{ bill.payment_status }}</td>
             <td><a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary">Details</a></td>
           </tr>
