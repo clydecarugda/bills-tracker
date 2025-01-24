@@ -61,8 +61,8 @@ class Bill(models.Model):
   
 
 class Payment(models.Model):
-  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='peyment_details')
-  bill_amount = models.ForeignKey(Bill, on_delete=models.CASCADE)
+  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='payment_details')
+  bill = models.ForeignKey(Bill, on_delete=models.CASCADE)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
   payment_type = models.CharField(max_length=25)
   amount = models.FloatField()
