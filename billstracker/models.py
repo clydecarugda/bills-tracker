@@ -24,44 +24,42 @@ class BillCategory(models.Model):
   
   class Meta:
     verbose_name_plural = 'Bill Categories'
-  
+    
 
 class BillDetail(models.Model):
-  user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
   category = models.ForeignKey(BillCategory, on_delete=models.CASCADE)
   description = models.TextField(null=True, blank=True)
   is_recurring = models.CharField(max_length=15,
                                   choices=[('one-time', 'One-Time'),
-                                          ('daily', 'Daily'),
-                                          ('monthly', 'Monthly'),
-                                          ('yearly', 'Yearly')], default='one-time')
+                                           ('daily', 'Daily'),
+                                           ('monthly', 'Monthly'),
+                                           ('yearly', 'Yearly')],
+                                  default='one-time')
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
     return self.name
-    
+  
 
-class BillAmount(models.Model):
+class Bill(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
   bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE)
   due_date = models.DateField()
   amount = models.FloatField()
   amount_payable = models.FloatField()
-  payment_status = models.ForeignKey('PaymentStatus', default=1, on_delete=models.CASCADE)
+  payment_status = models.ForeignKey(PaymentStatus, default=1, on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
-    return self.bill
+    return self.bill_detail.name
   
-  class Meta:
-    ordering = ['payment_status', 'due_date']
 
-
-class PaymentMethod(models.Model):
+class Payment(models.Model):
   bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='pays')
-  bill_amount = models.ForeignKey(BillAmount, on_delete=models.CASCADE)
+  bill_amount = models.ForeignKey(Bill, on_delete=models.CASCADE)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
   payment_type = models.CharField(max_length=25)
   amount = models.FloatField()
@@ -70,7 +68,7 @@ class PaymentMethod(models.Model):
   updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
-    return self.bill
+    return self.bill_detail.name
   
 
 class USettings(models.Model):
