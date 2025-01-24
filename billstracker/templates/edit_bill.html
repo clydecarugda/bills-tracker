@@ -30,74 +30,55 @@
     
     <form method="post">
       {% csrf_token %}
-      <!-- Bill Name -->
+
       <div class="row mb-3">
         <div class="col">
-          <label for="id_name" class="form-label">Name</label>
-          <div class="form-floating">
-            {{ form.name|add_attrs:"class=form-control, placeholder=Bill Name" }}
-            <label for="id_name">Name of Bill</label>
-          </div>
-        </div>
-      </div>
-    
-      <div class="row">
-        <!-- Left Column -->
-        <div class="col-md-6">
-          <!-- Bill Type -->
-          <div class="mb-3">
-            <div class="form-label">Bill Type</div>
-            <div class="form-floating">
-              {{ form.bill_type|add_attrs:"class=form-control, placeholder=Bill Name"}}
-              <label for="id_bill_type">Type of the Bill (Loan, Utilities, Car, etc...)</label>
-            </div>
-          </div>
-    
-          <!-- Due Date and Amount -->
+
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Due Date</label>
-              <div class="form-floating">
-                <input type="date" class="form-control" id="id_due_date" name="due_date" value="{{ form.due_date.value|date:'Y-m-d' }}">
-                <label for="id_due_date">Due Date</label>
-              </div>
+            <div class="col mb-3">
+              <label for="id_name" class="form-label">Bill Name</label>
+              {{ form.name|add_attrs:"class=form-control" }}
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col mb-3">
+              <label for="id_category" class="form-label">Category</label>
+              {{ form.category|add_attrs:"class=form-control" }}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col mb-3">
+              <label for="id_due_date" class="form-label">Due Date</label>
+              <input type="date" class="form-control" id="id_due_date" name="due_date" value="{{ form.due_date.value|date:'Y-m-d' }}">
+            </div>
+            <div class="col mb-3">
+              <label for="id_is_recurring" class="form-label">Payment Schedule</label>
+              {{ form.is_recurring|add_attrs:"class=form-control"}}
+            </div>
+          </div>
+
+          <div class="row d-flex justify-content-center">
+            <div class="col-5 mb-3">
               <label for="id_amount" class="form-label">Amount</label>
-                <div class="input-group">
-                  <span class="input-group-text">&#8369;</span>
-                  <div class="form-floating">
-                    {{ form.amount|add_attrs:"class=form-control, placeholder=Bill Name" }}
-                    <label for="id_amount">Amount</label>
-                  </div>
-                </div>
-            </div>
-          </div>
-    
-          <!-- Status and Recurring -->
-          <div class="row">
-            <div class="col">
-              <label class="form-label">Status</label>
-              <div class="form-floating">
-                {{ form.payment_status|add_attrs:"class=form-control, placeholder=Bill Status" }}
-                <label for="id_payment_status">Payment Status</label>
+              <div class="input-group">
+                <span class="input-group-text">&#8369;</span>
+                  {{ form.amount|add_attrs:"class=form-control" }}
               </div>
             </div>
           </div>
-        </div>
-    
-        <!-- Right Column for Description -->
-        <div class="col-md-6 d-flex flex-column">
-          <label class="form-label">Description</label>
-          <div class="form-floating flex-grow-1">
-            {{ form.description|add_attrs:"class=form-control h-100, style=min-height: 0;" }}
-            <label for="id_description">Bill Description</label>
+
+          <div class="row">
+            <div class="col mb-3">
+              <label for="id_description" class="form-label">Description</label>
+              {{ form.description|add_attrs:"class=form-control" }}
+            </div>
           </div>
+
         </div>
+
       </div>
       
       <div class="mt-3 text-end">
-        <input type="submit" class="btn btn-success" value="Update" />
+        <input type="submit" class="btn btn-success" value="Save" />
       </div>
     </form>
   

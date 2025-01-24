@@ -4,6 +4,7 @@ from django.http import Http404
 from django import forms
 from datetime import datetime
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -13,7 +14,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib.auth import login
 
-from .models import BillDetail, Bill, Payment, PaymentStatus
+from dateutil.relativedelta import relativedelta
+
+from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory
 
 
 class LoginPage(LoginView):
@@ -62,15 +65,25 @@ class CreateBill(LoginRequiredMixin, CreateView): # Editing Now !!!
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
       
+      context['category'] = BillCategory.objects.all()
+      context['is_recurring_choices'] = BillDetail._meta.get_field('is_recurring').choices
+      
       return context
   
   def form_valid(self, form):
+    recurring_value = self.request.POST.get('is_recurring')
+    recurring_count = int(self.request.POST.get('recurring_days'))
+    
+    form_due_date = form.cleaned_data['due_date']
+    
     with transaction.atomic():
+      category_instance = BillCategory.objects.get(id=self.request.POST.get('category'))
+      
       bill_details = BillDetail(
-            name=form.cleaned_data['name'],
-            category=form.cleaned_data['category'],
-            description=form.cleaned_data['description'],
-            is_recurring=form.cleaned_data['is_recurring'],
+            name = self.request.POST.get('name'),
+            category = category_instance,
+            description = self.request.POST.get('description'),
+            is_recurring = self.request.POST.get('is_recurring')
         )
       
       bill_details.save()
@@ -78,7 +91,36 @@ class CreateBill(LoginRequiredMixin, CreateView): # Editing Now !!!
       form.instance.user = self.request.user
       form.instance.bill_detail = bill_details
       form.instance.amount_payable = form.cleaned_data['amount']
-    
+      
+      # bill = Bill(
+      #         user = self.request.user,
+      #         bill_detail = bill_details,
+      #         amount = form_amount,
+      #         amount_payable = form_amount,
+      #         due_date = form_due_date
+      #       )
+      
+      # bill.save()
+      
+      if not recurring_value == 'one-time':
+        for i in range(1, recurring_count):
+          if recurring_value == 'daily':
+            form_due_date += relativedelta(days=1)
+          elif recurring_value == 'monthly':
+            form_due_date += relativedelta(months=1)
+          elif recurring_value == 'yearly':
+            form_due_date += relativedelta(years=1)
+              
+          bill = Bill(
+            user = self.request.user,
+            bill_detail = bill_details,
+            amount = form.cleaned_data['amount'],
+            amount_payable = form.cleaned_data['amount'],
+            due_date = form_due_date
+          )
+            
+          bill.save()
+          
     return super().form_valid(form)
    
 

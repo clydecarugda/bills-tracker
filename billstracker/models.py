@@ -45,7 +45,7 @@ class BillDetail(models.Model):
 
 class Bill(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
-  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE)
+  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='bill_details')
   due_date = models.DateField()
   amount = models.FloatField()
   amount_payable = models.FloatField()
@@ -56,9 +56,12 @@ class Bill(models.Model):
   def __str__(self):
     return self.bill_detail.name
   
+  class Meta:
+    ordering = ['payment_status', 'due_date']
+  
 
 class Payment(models.Model):
-  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='pays')
+  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='peyment_details')
   bill_amount = models.ForeignKey(Bill, on_delete=models.CASCADE)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
   payment_type = models.CharField(max_length=25)
