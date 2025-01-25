@@ -13,5 +13,5 @@ urlpatterns = [
     path('delete_bill/<int:pk>', DeleteBill.as_view(), name='bill-delete'),
     path('update_bill/<int:pk>', UpdateBill.as_view(), name='bill-update'),
     path('create_bill/', CreateBill.as_view(), name='create-bill'),
-    path('pay_bill/<int:pk>', PayBill.as_view(), name='pay-bill'),
+    path('pay_bill/<int:b_id>/<int:d_id>', PayBill.as_view(), name='pay-bill'),
 ]

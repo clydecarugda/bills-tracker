@@ -163,6 +163,7 @@ class BillView(LoginRequiredMixin, DetailView):
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
       context['details'] = get_object_or_404(BillDetail, id=self.object.bill_detail.id)
+      context['payments'] = Payment.objects.filter(bill=self.kwargs['pk'])
       
       class PaymentForm(forms.ModelForm):
         class Meta:
@@ -234,24 +235,27 @@ class UpdateBill(LoginRequiredMixin, UpdateView):
 
 class PayBill(LoginRequiredMixin, CreateView):
   model = Payment
-  context_object_name = 'paymentmethod'
+  context_object_name = 'payment'
   template_name = 'paybill.html'
-  fields = ['method_name', 'amount', 'fee_amount']
+  fields = ['payment_reference', 'payment_type', 'amount', 'fee_amount']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    bill_id = self.kwargs['pk']
-    context['bill'] = BillDetail.objects.get(pk=bill_id)
+    bill_id = self.kwargs['b_id']
+    detail_id = self.kwargs['d_id']
+    
+    context['details'] = get_object_or_404(BillDetail, id=detail_id)
+    context['bill'] = get_object_or_404(Bill, id=bill_id)
     
     return context
   
   def form_valid(self, form):
       with transaction.atomic():
-        bill_id = self.kwargs['pk']
+        bill_id = self.kwargs['b_id']
         
-        bill = BillDetail.objects.select_for_update().get(id=bill_id)
+        bill = Bill.objects.select_for_update().get(id=bill_id)
         
         payment = form.save(commit=False)
         payment.bill = bill
@@ -269,7 +273,7 @@ class PayBill(LoginRequiredMixin, CreateView):
         
         bill.save()
         
-        return redirect('bills-tracker')
+        return redirect('bill-view', pk=bill_id)
       
       return response
   

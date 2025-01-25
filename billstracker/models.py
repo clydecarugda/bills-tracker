@@ -69,7 +69,7 @@ class PaymentType(models.Model):
     return self.name
 
 class Payment(models.Model):
-  bill = models.ForeignKey(Bill, on_delete=models.CASCADE)
+  bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
   payment_type = models.ForeignKey(PaymentType, on_delete=models.CASCADE)
   amount = models.FloatField()
@@ -78,7 +78,7 @@ class Payment(models.Model):
   updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
-    return self.bill_detail.name
+    return self.bill.bill_detail.name
   
 
 class USettings(models.Model):

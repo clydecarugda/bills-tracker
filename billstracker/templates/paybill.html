@@ -21,8 +21,14 @@
           {% csrf_token %}
           <div class="row mb-2">
             <div class="col">
-              <label for="id_method_name" class="form-label">Payment Method</label>
-              <input type="text" name="{{ form.method_name.name }}" maxlength="25" class="form-control" id="id_method_name" placeholder="GCash, Cash, Credit Card, etc..." required>
+              <label for="id_payment_type" class="form-label">Payment Method</label>
+              {{ form.payment_type|add_attrs:"class=form-control" }}
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col">
+              <label for="id_payment_reference" class="form-label">Reference #</label>
+              {{ form.payment_reference|add_attrs:"class=form-control" }}
             </div>
           </div>
           <div class="row mb-2">
@@ -60,14 +66,12 @@
         <div class="card border-success">
           <div class="card-body">
             <div class="row">
-              <h6><strong>Bill Name: </strong>{{ bill.name }}</h6>
-              <h7><strong>Type: </strong>{{ bill.bill_type }}</h7>
+              <h7><strong>Bill Name: </strong>{{ details.name }}</h7>
+              <h7><strong>Category: </strong>{{ details.category }}</h7>
               <h7><strong>Due Date: </strong>{{ bill.due_date }}</h7>
-              <h7><strong>Amount: </strong>{{ bill.amount }}</h7>
-              <h7><strong>Balance due: </strong>{{ bill.amount_payable }}</h7>
-              <h7><strong>Status: </strong>{{ bill.payment_status }}</h7>
-              <p></p>
-              <h7><strong>Description: </strong>{{ bill.description }}</h7>
+              <h7><strong>Description: </strong>{{ details.description }}</h7>
+              <h7><strong>Total Amount: </strong>&#8369;{{ bill.amount }}</h7>
+              <h7><strong>Balance due: </strong>&#8369;{{ bill.amount_payable }}</h7>
             </div>
           </div>
         </div>

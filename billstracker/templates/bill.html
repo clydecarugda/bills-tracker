@@ -82,7 +82,59 @@
   <div class="row mb-3">
     <div class="col">
       <label class="form-label">Status</label>
-      <input type="text" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
+      <div class="input-group">
+        <input type="text" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#paymenthistory">
+          Hisotry
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="paymenthistory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paymenthistoryLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="paymenthistoryLabel">Payment History</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+
+                <div class="row table-responsive mb-3">
+                  <table class="table table-hover table-striped text-center align-middle">
+                    <thead class="table-primary">
+                      <tr>
+                        <th scope="col">Reference #</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Fee</th>
+                        <th scope="col">Paid on</th>
+                      </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+            
+                      {% for pay in payments %}
+                      <tr>
+                        <td>{{ pay.payment_reference }}</td>
+                        <td>{{ pay.payment_type }}</td>
+                        <td>&#8369; {{ pay.amount }}</td>
+                        <td>&#8369; {{ pay.fee_amount }}</td>
+                        <td>{{ pay.created_at }}</td>
+                      </tr>
+                      {% endfor %}
+            
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
     <div class="col">
       <label class="form-label">Total Amount</label>
@@ -105,7 +157,7 @@
 
   <div class="row text-center">
     <div class="col">
-      <a href="{% url 'pay-bill' bills.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
+      <a href="{% url 'pay-bill' bills.id bills.bill_detail.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
     </div>
   </div>
 
