@@ -48,7 +48,7 @@ class BillList(LoginRequiredMixin, ListView):
     
     search_input = self.request.GET.get('search_area') or ''
     if search_input:
-      context['bills'] = context['bills'].filter(name__contains=search_input)
+      context['bills'] = context['bills'].filter(bill_detail__name__icontains=search_input)
     
     return context
  
