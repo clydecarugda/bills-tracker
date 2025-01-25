@@ -38,7 +38,7 @@
 
           {% for bill in bills %}
           <tr>
-            <td>{{ bill.bill_detail.name }}</td>
+            <td><a href="#" class="text-decoration-none text-secondary-emphasis">{{ bill.bill_detail.name }}</a></td>
             <td>{{ bill.due_date }}</td>
             <td>&#8369; {{ bill.amount_payable }}</td>
             <td>&#8369; {{ bill.amount }}</td>

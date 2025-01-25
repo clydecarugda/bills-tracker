@@ -4,6 +4,7 @@ from django.http import Http404
 from django import forms
 from datetime import datetime
 from django.db import transaction
+from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.views.generic.list import ListView
@@ -52,7 +53,7 @@ class BillList(LoginRequiredMixin, ListView):
     return context
  
 
-class CreateBill(LoginRequiredMixin, CreateView): # Editing Now !!!
+class CreateBill(LoginRequiredMixin, CreateView):
   model = Bill
   context_object_name = 'bills'
   template_name = 'create_bill.html'
@@ -125,8 +126,8 @@ class CreateBill(LoginRequiredMixin, CreateView): # Editing Now !!!
    
 
 class BillDetailView(LoginRequiredMixin, DetailView):
-  model = BillDetail
-  template_name = 'bill.html'
+  model = Bill
+  template_name = 'bill_detail.html'
   context_object_name = 'bills'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
@@ -134,6 +135,12 @@ class BillDetailView(LoginRequiredMixin, DetailView):
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
     context['payment'] = Payment.objects.filter(bill=self.kwargs['pk'])
+    context['details'] = get_object_or_404(BillDetail, id=self.kwargs['d_id'])
+    context['bill_total_amount'] = Bill.objects.filter(bill_detail = self.kwargs['d_id']).aggregate(total=Sum('amount'))['total']
+    
+    payment_total = Payment.objects.filter(bill = self.kwargs['pk']).aggregate(total=Sum('amount'))['total'] or 0
+    
+    context['bill_total_amount_payable'] = context['bill_total_amount'] - payment_total
     
     return context
   
@@ -145,9 +152,35 @@ class BillDetailView(LoginRequiredMixin, DetailView):
     
     return obj
   
+  
+class BillView(LoginRequiredMixin, DetailView):
+  model = Bill
+  template_name = 'bill.html'
+  context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['details'] = get_object_or_404(BillDetail, id=self.object.bill_detail.id)
+      
+      class PaymentForm(forms.ModelForm):
+        class Meta:
+          model = Payment
+          fields = ['payment_reference', 'payment_type', 'amount', 'fee_amount']
+      
+      return context
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
 
 class DeleteBill(LoginRequiredMixin, DeleteView):
-  model = BillDetail
+  model = Bill
   context_object_name = 'bills'
   success_url = reverse_lazy('bills-tracker')
   login_url = 'login'

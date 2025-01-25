@@ -58,13 +58,20 @@ class Bill(models.Model):
   
   class Meta:
     ordering = ['payment_status', 'due_date']
+    
+
+class PaymentType(models.Model):
+  name = models.CharField(max_length=25)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now_add=True)
   
+  def __str__(self):
+    return self.name
 
 class Payment(models.Model):
-  bill_detail = models.ForeignKey(BillDetail, on_delete=models.CASCADE, related_name='payment_details')
   bill = models.ForeignKey(Bill, on_delete=models.CASCADE)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
-  payment_type = models.CharField(max_length=25)
+  payment_type = models.ForeignKey(PaymentType, on_delete=models.CASCADE)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
   created_at = models.DateTimeField(auto_now_add=True)

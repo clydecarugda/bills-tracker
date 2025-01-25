@@ -1,0 +1,117 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div class="row mb-3">
+  <div class="col">
+    <a href="{% url 'bills-tracker' %}" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+    
+<div class="row">
+
+  <div class="col-8 border rounded border-dark p-3">
+    <div class="row text-center mb-3">
+      <h4>Bill Details</h4>
+    </div>
+
+    <div class="row">
+      <div class="col mb-2">
+        <label for="id_name" class="form-label">Bill Name</label>
+        <input type="text" class="form-control" value="{{ details.name }}" readonly>
+      </div>
+      <div class="col mb-2">
+        <label for="id_category" class="form-label">Category</label>
+        <input type="text" class="form-control" id="id_category" value="{{ details.category }}" readonly>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="row">
+          <div class="col mb-2">
+            <label for="id_due_date" class="form-label">Due Date</label>
+            <input type="date" class="form-control" value="{{ bills.due_date|date:'Y-m-d' }}" readonly>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col mb-2">
+            <label for="id_is_recurring" class="form-label">Payment Schedule</label>
+            <input type="text" class="form-control" id="id_is_recurring" value="{{ details.is_recurring }}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col mb-2">
+        <label for="id_description" class="form-label">Description</label>
+        <textarea class="form-control" id="id_description" value="{{ details.description }}" readonly></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col mb-2">
+        <label for="id_payment_status" class="form-label">Status</label>
+        <input type="text" class="form-control" id="id_payment_status" value="{{ bills.payment_status }}" readonly>
+      </div>
+      <div class="col mb-2">
+        <label for="id_amount" class="form-label">Total Amount</label>
+        <div class="input-group">
+          <span class="input-group-text">&#8369;</span>
+          <input type="number" class="form-control" id="id_amount" value="{{ bill_total_amount }}" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="row d-flex justify-content-center">
+      <div class="col-6 m-2 text-center">
+        <label for="id_amount_payable" class="form-label">Balance</label>
+        <div class="input-group">
+          <span class="input-group-text">&#8369;</span>
+          <input type="number" class="form-control" id="id_amount_payable" value="{{ bills.amount_payable }}" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+      <div class="col mt-3">
+        <a href="{% url 'pay-bill' bills.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
+      </div>
+      <div class="col mt-3 text-end">
+        <a href="{% url 'bill-update' bills.id %}" class="btn btn-success">Edit</a>
+        <!-- Delete Button -->
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
+
+        <!-- Modal Delete-->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Delete Bill Info</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body text-center">
+                Are you sure you want to delete <strong>{{ bills.name }}</strong>?
+              </div>
+              <div class="modal-footer">
+                <form id="deleteForm" method="POST" action="{% url 'bill-delete' bills.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Yes</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-4">
+    <p>Payment History here</p>
+  </div>
+</div>
+
+  
+{% endblock content %}
+  
