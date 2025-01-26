@@ -196,41 +196,42 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
   
 
 class UpdateBill(LoginRequiredMixin, UpdateView):
-  model = BillDetail
+  model = Bill
   context_object_name = 'bill'
   template_name = 'edit_bill.html'
-  fields = ['name',
-            'category',
-            'description',
-            'due_date',
-            'amount',
-            'is_recurring']
+  fields = ['due_date',
+            'amount']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
-  def get_success_url(self):
-    return reverse_lazy('bill-view', kwargs={'pk': self.object.pk})
-  
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    bill_id = self.kwargs['pk']
-    payments = Payment.objects.filter(bill=bill_id)
-    context['payments'] = payments
+    bill = self.get_object()
+    
+    context['details'] = bill.bill_detail
+    context['category'] = BillCategory.objects.all()
     
     return context
   
   def form_valid(self, form):
-    response = super().form_valid(form)
-    
-    bill_form = form.instance
-    
-    total_paid = sum(pay.amount for pay in bill_form.pays.all())
-    
-    bill_form.amount_payable = bill_form.amount - total_paid
-    
-    bill_form.save()
+    with transaction.atomic():
+      category_instance = BillCategory.objects.get(id=self.request.POST.get('category'))
+      bill_form = form.instance
+      bill_detail = self.object.bill_detail
       
-    return response
+      bill_detail.name = self.request.POST.get('name')
+      bill_detail.category = category_instance
+      bill_detail.description = self.request.POST.get('description')
+      bill_detail.save()
+      
+      total_paid = sum(pay.amount for pay in bill_form.pays.all())
+      
+      bill_form.amount_payable = bill_form.amount - total_paid
+      bill_form.save()
+      
+      return redirect('bill-view', pk=self.kwargs['pk'])
+        
+    return super().form_valid(form)
   
 
 class PayBill(LoginRequiredMixin, CreateView):
