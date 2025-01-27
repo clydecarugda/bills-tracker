@@ -27,6 +27,7 @@ class BillCategory(models.Model):
     
 
 class BillDetail(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
   category = models.ForeignKey(BillCategory, on_delete=models.CASCADE)
   description = models.TextField(null=True, blank=True)

@@ -8,9 +8,9 @@
   </div>
 </div>
     
-<div class="row">
+<div class="row mb-3">
 
-  <div class="col-8 border rounded border-dark p-3">
+  <div class="col border rounded border-dark p-3">
     <div class="row text-center mb-3">
       <h4>Bill Details</h4>
     </div>
@@ -18,11 +18,11 @@
     <div class="row">
       <div class="col mb-2">
         <label for="id_name" class="form-label">Bill Name</label>
-        <input type="text" class="form-control" value="{{ details.name }}" readonly>
+        <input type="text" class="form-control" value="{{ bill_detail.name }}" readonly>
       </div>
       <div class="col mb-2">
         <label for="id_category" class="form-label">Category</label>
-        <input type="text" class="form-control" id="id_category" value="{{ details.category }}" readonly>
+        <input type="text" class="form-control" id="id_category" value="{{ bill_detail.category }}" readonly>
       </div>
     </div>
 
@@ -30,28 +30,25 @@
       <div class="col">
         <div class="row">
           <div class="col mb-2">
-            <label for="id_due_date" class="form-label">Due Date</label>
-            <input type="date" class="form-control" value="{{ bills.due_date|date:'Y-m-d' }}" readonly>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col mb-2">
             <label for="id_is_recurring" class="form-label">Payment Schedule</label>
-            <input type="text" class="form-control" id="id_is_recurring" value="{{ details.is_recurring }}" readonly>
+            <input type="text" class="form-control" id="id_is_recurring" value="{{ bill_detail.is_recurring }}" readonly>
           </div>
         </div>
       </div>
       <div class="col mb-2">
-        <label for="id_description" class="form-label">Description</label>
-        <textarea class="form-control" id="id_description" value="{{ details.description }}" readonly></textarea>
+        <label for="id_create_at" class="form-label">Created on</label>
+        <input type="text" class="form-control" id="id_create_at" value="{{ bill_detail.created_at }}" readonly>
       </div>
     </div>
 
     <div class="row">
       <div class="col mb-2">
-        <label for="id_payment_status" class="form-label">Status</label>
-        <input type="text" class="form-control" id="id_payment_status" value="{{ bills.payment_status }}" readonly>
+        <label for="id_description" class="form-label">Description</label>
+        <textarea class="form-control" id="id_description" rows="3" readonly>{{ bill_detail.description }}</textarea>
       </div>
+    </div>
+
+    <div class="row">
       <div class="col mb-2">
         <label for="id_amount" class="form-label">Total Amount</label>
         <div class="input-group">
@@ -59,25 +56,28 @@
           <input type="number" class="form-control" id="id_amount" value="{{ bill_total_amount }}" readonly>
         </div>
       </div>
+      <div class="col mb-2">
+        <label for="id_amount_payable" class="form-label">Total Fees Amount</label>
+        <div class="input-group">
+          <span class="input-group-text">&#8369;</span>
+          <input type="number" class="form-control" id="id_amount_payable" value="{{ fee_total }}" readonly>
+        </div>
+      </div>
     </div>
 
     <div class="row d-flex justify-content-center">
-      <div class="col-6 m-2 text-center">
-        <label for="id_amount_payable" class="form-label">Balance</label>
+      <div class="col-3 m-2 text-center">
+        <label for="id_amount_payable" class="form-label"><strong>Balance</strong></label>
         <div class="input-group">
           <span class="input-group-text">&#8369;</span>
-          <input type="number" class="form-control" id="id_amount_payable" value="{{ bills.amount_payable }}" readonly>
+          <input type="number" class="form-control" id="id_amount_payable" value="{{ bill_total_amount_payable }}" readonly>
         </div>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="row">
-      <div class="col mt-3">
-        <a href="{% url 'pay-bill' bills.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
-      </div>
       <div class="col mt-3 text-end">
-        <a href="{% url 'bill-update' bills.id %}" class="btn btn-success">Edit</a>
         <!-- Delete Button -->
         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
 
@@ -90,10 +90,13 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body text-center">
-                Are you sure you want to delete <strong>{{ bills.name }}</strong>?
+                <h5>Warning!!</h5>
+                Deleting <strong>{{ bill_detail.name }}</strong>
+                will also delete all recurring bills.
+                <p>Do you really want to delete <strong>{{ bill_detail.name }}</strong>?</p>
               </div>
               <div class="modal-footer">
-                <form id="deleteForm" method="POST" action="{% url 'bill-delete' bills.id %}" class="d-inline">
+                <form id="deleteForm" method="POST" action="{% url 'billdetail-delete' bill_detail.id %}" class="d-inline">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-danger">Yes</button>
                 </form>
@@ -106,10 +109,55 @@
     </div>
 
   </div>
+  
+</div>
 
-  <div class="col-4">
-    <p>Payment History here</p>
+<div class="row border rounded p-3">
+  <div class="row text-center mb-3">
+    <h3>Bill List</h3>
   </div>
+  <div class="row">
+    {% for bill in bills %}
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <p><strong>Due Date:</strong> {{bill.due_date }}</p>
+          <p><strong>Amount:</strong> {{ bill.amount }}</p>
+          <p><strong>Status:</strong> {{ bill.payment_status }}</p>
+        </div>
+        <div class="card-footer text-end">
+          <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#DeleteBillModal">Delete</button>
+
+          <!-- Modal Delete-->
+          <div class="modal fade" id="DeleteBillModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="DeleteBillModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="DeleteBillModalLabel">Delete Bill Info</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                  <p>Are you sure you want to delete the following Bill?</p>
+                  <h6><strong>Bill Name: </strong>{{ bill_detail.name }}</h6>
+                  <h6><strong>Category: </strong>{{ bill_detail.category }}</h6>
+                  <h6><strong>Amount: </strong>&#8369;{{ bill.amount }}</h6>
+                </div>
+                <div class="modal-footer">
+                  <form id="deleteForm" method="POST" action="{% url 'bill-delete' bill.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                  </form>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
 </div>
 
   

@@ -52,7 +52,7 @@
       <label for="id_name" class="form-label">Bill Name</label>
       <div class="input-group">
         <input type="text" class="form-control" value="{{ details.name }}" disabled readonly>
-        <a href="{% url 'billdetail-view' bills.id %}" class="btn btn-outline-dark">View</a>
+        <a href="{% url 'billdetail-view' bills.bill_detail.id %}" class="btn btn-outline-dark">View</a>
       </div>
     </div>
     <div class="col">

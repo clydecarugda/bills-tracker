@@ -75,12 +75,13 @@ class CreateBill(LoginRequiredMixin, CreateView):
     recurring_value = self.request.POST.get('is_recurring')
     recurring_count = int(self.request.POST.get('recurring_days'))
     
-    form_due_date = form.cleaned_data['due_date']
+    form_due_date_primary = form.cleaned_data['due_date']
     
     with transaction.atomic():
       category_instance = BillCategory.objects.get(id=self.request.POST.get('category'))
       
       bill_details = BillDetail(
+            user = self.request.user,
             name = self.request.POST.get('name'),
             category = category_instance,
             description = self.request.POST.get('description'),
@@ -106,11 +107,11 @@ class CreateBill(LoginRequiredMixin, CreateView):
       if not recurring_value == 'one-time':
         for i in range(1, recurring_count):
           if recurring_value == 'daily':
-            form_due_date += relativedelta(days=1)
+            form_due_date = form_due_date_primary + relativedelta(days=i)
           elif recurring_value == 'monthly':
-            form_due_date += relativedelta(months=1)
+            form_due_date = form_due_date_primary + relativedelta(months=i)
           elif recurring_value == 'yearly':
-            form_due_date += relativedelta(years=1)
+            form_due_date = form_due_date_primary + relativedelta(years=i)
               
           bill = Bill(
             user = self.request.user,
@@ -126,20 +127,20 @@ class CreateBill(LoginRequiredMixin, CreateView):
    
 
 class BillDetailView(LoginRequiredMixin, DetailView):
-  model = Bill
+  model = BillDetail
   template_name = 'bill_detail.html'
-  context_object_name = 'bills'
+  context_object_name = 'bill_detail'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    context['payment'] = Payment.objects.filter(bill=self.kwargs['pk'])
-    context['details'] = get_object_or_404(BillDetail, id=self.kwargs['d_id'])
-    context['bill_total_amount'] = Bill.objects.filter(bill_detail = self.kwargs['d_id']).aggregate(total=Sum('amount'))['total']
+    context['bills'] = Bill.objects.filter(bill_detail=self.kwargs['pk'])
+    
+    context['bill_total_amount'] = Bill.objects.filter(bill_detail = self.kwargs['pk']).aggregate(total=Sum('amount'))['total']
     
     payment_total = Payment.objects.filter(bill = self.kwargs['pk']).aggregate(total=Sum('amount'))['total'] or 0
-    
+    context['fee_total'] = Payment.objects.filter(bill = self.kwargs['pk']).aggregate(total=Sum('fee_amount'))['total'] or 0
     context['bill_total_amount_payable'] = context['bill_total_amount'] - payment_total
     
     return context
@@ -183,12 +184,35 @@ class BillView(LoginRequiredMixin, DetailView):
 class DeleteBill(LoginRequiredMixin, DeleteView):
   model = Bill
   context_object_name = 'bills'
-  success_url = reverse_lazy('bills-tracker')
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
+  def get_success_url(self):
+    current_url = self.request.META.get('HTTP_REFERER', '')
+    if 'billdetail' in current_url:
+      return current_url
+    else:
+      return reverse_lazy('bills-tracker')
+  
   def get_object(self, queryset = None):
     obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+
+class DeleteBillDetail(LoginRequiredMixin, DeleteView):
+  model = BillDetail
+  login_url = 'url'
+  redirect_field_name = 'redirect_to'
+  
+  def get_success_url(self):
+    return reverse_lazy('bills-tracker')
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
     if obj.user != self.request.user:
       raise Http404("Product does not exist or you do not have permission to view it.")
     
