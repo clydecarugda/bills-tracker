@@ -2,17 +2,17 @@
 
 {% block content %}
 
-  <div class="row mb-3">
+  <!-- <div class="row mb-3">
     <div class="col">
       <h2>Bills List</h2>
-  </div>
+  </div> -->
 
   <div class="row mb-3">
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-3">
       <a href="{% url 'create-bill' %}" class="btn btn-primary">Add</a>
     </div>
 
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-3">
       <form method="get">
         <div class="input-group">
           <input type="text" class="form-control" placeholder="Search..." name="search_area" value="{{ search_input }}">
@@ -23,7 +23,7 @@
   </div>
 
     <div class="row table-responsive mb-3">
-      <table class="table table-hover table-striped text-center align-middle">
+      <table class="table table-sm table-hover table-striped text-center align-middle">
         <thead class="table-primary">
           <tr>
             <th scope="col">Bill Name</th>

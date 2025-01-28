@@ -16,30 +16,30 @@
   </div>
   <div class="card-body">
     <div class="row p-2">
-      <div class="col-7">
+      <div class="col-sm-12 col-md-7 mb-2">
         <form method="post">
           {% csrf_token %}
           <div class="row mb-2">
-            <div class="col">
+            <div class="col-sm-12 col-md-6 mb-2">
               <label for="id_payment_type" class="form-label">Payment Method</label>
               {{ form.payment_type|add_attrs:"class=form-control" }}
             </div>
           </div>
           <div class="row mb-2">
-            <div class="col">
+            <div class="col-sm-12 col-md-6 mb-2">
               <label for="id_payment_reference" class="form-label">Reference #</label>
               {{ form.payment_reference|add_attrs:"class=form-control" }}
             </div>
           </div>
           <div class="row mb-2">
-            <div class="col-7">
+            <div class="col-sm-12 col-md-7 mb-2">
               <label for="id_amount" class="form-label">Amount to pay</label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
                 {{ form.amount|add_attrs:"class=form-control" }}
               </div>
             </div>
-            <div class="col-5">
+            <div class="col-sm-12 col-md-5 mb-2">
               <label for="id_fee_amount" class="form-label">Fee (If any)</label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
@@ -48,21 +48,21 @@
             </div>
           </div>
           <div class="row mt-4">
-            <div class="col-9">
+            <div class="col-sm-12 col-md-9 mb-2">
               <label for="id_total_amount" class="form-label"><strong>Total Amount:</strong></label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
                 <input type="number" class="form-control" id="id_total_amount" readonly disabled>
               </div>
             </div>
-          <div class="row mt-4">
+          <div class="row mt-3 d-grid gap-2 d-md-flex justify-content-md-end">
             <input type="submit" class="btn btn-success" value="Pay">
           </div>
           </div>
         </form>
       </div>
 
-      <div class="col-5 d-flex align-items-stretch">
+      <div class="col-sm-12 col-md-5 mt-2 d-flex align-items-stretch">
         <div class="card border-success">
           <div class="card-body">
             <div class="row">
