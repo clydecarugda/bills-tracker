@@ -1,0 +1,41 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row mb-3">
+  <div class="col">
+    <a href="{{ request.META.HTTP_REFERER  }}" class="btn btn-secondary">Back</a>
+  </div>
+</div>
+
+<div class="row d-flex justify-content-center align-items-center">
+  <div class="col-sm-12 col-md-6 mb-2">
+    <div class="card border-dark">
+      <div class="card-header">
+        <h4 class="mb-0 text-center">New Category</h4>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mb-2">
+              <label for="id_name" class="form-label">Category Name</label>
+              <input type="text" class="form-control" name="name" id="id_name" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mb-2 text-center">
+              <button type="submit" class="btn btn-success">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+{% endblock content %}
+  
