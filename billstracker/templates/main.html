@@ -41,7 +41,7 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Hello {{ request.user }}
+                Hello {% if request.user.first_name %} {{ request.user.first_name }} {% else %} {{ request.user }} {% endif %}
               </a>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#">Profile</a></li>
