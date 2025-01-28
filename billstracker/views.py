@@ -135,12 +135,14 @@ class BillDetailView(LoginRequiredMixin, DetailView):
   
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    context['bills'] = Bill.objects.filter(bill_detail=self.kwargs['pk'])
+    bill = Bill.objects.filter(bill_detail=self.kwargs['pk'])
+    context['bills'] = bill
     
     context['bill_total_amount'] = Bill.objects.filter(bill_detail = self.kwargs['pk']).aggregate(total=Sum('amount'))['total']
     
-    payment_total = Payment.objects.filter(bill = self.kwargs['pk']).aggregate(total=Sum('amount'))['total'] or 0
-    context['fee_total'] = Payment.objects.filter(bill = self.kwargs['pk']).aggregate(total=Sum('fee_amount'))['total'] or 0
+    payment_total = Bill.objects.filter(bill_detail = self.kwargs['pk'], payment_status=PaymentStatus.objects.get(name='Paid')).aggregate(total=Sum('amount'))['total'] or 0
+    
+    context['fee_total'] = 0
     context['bill_total_amount_payable'] = context['bill_total_amount'] - payment_total
     
     return context
