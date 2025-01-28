@@ -126,6 +126,26 @@ class CreateBill(LoginRequiredMixin, CreateView):
     return super().form_valid(form)
    
 
+class CreateCategory(LoginRequiredMixin, CreateView):
+  model = BillCategory
+  template_name = 'new_category.html'
+  context_object_name = 'category'
+  fields = ['name']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('create-bill')
+      
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+
+      return context
+    
+  def form_valid(self, form):
+
+    return super().form_valid(form)
+  
+  
+
 class BillDetailView(LoginRequiredMixin, DetailView):
   model = BillDetail
   template_name = 'bill_detail.html'

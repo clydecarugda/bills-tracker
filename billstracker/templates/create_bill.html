@@ -39,14 +39,39 @@
             </div>
             <div class="col-sm-12 col-md-6 mb-2">
               <label for="id_category" class="form-label">Category</label>
-              <select class="form-select" name="category" id="id_category" required>
-                <option value="">---Select Category---</option>
-                {% for cat in category %}
-                  <option value="{{ cat.id }}" {% if cat.id == form.category.value %} selected {% endif %}>
-                    {{ cat.name }}
-                  </option>
-                {% endfor %}
-              </select>
+              <div class="input-group">
+                <select class="form-select" name="category" id="id_category" required>
+                  <option value="">---Select Category---</option>
+                  {% for cat in category %}
+                    <option value="{{ cat.id }}" {% if cat.id == form.category.value %} selected {% endif %}>
+                      {{ cat.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <!-- Button trigger Category -->
+                <button type="button" class="btn btn-outline-dark rounded-end" data-bs-toggle="modal" data-bs-target="#categoryModal">
+                  New
+                </button>
+
+                <!-- Modal Category -->
+                <div class="modal fade" id="categoryModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="categoryModalLabel">New Category</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>This will take you to the new category page. Continue?</p>
+                      </div>
+                      <div class="modal-footer">
+                        <a href="{% url 'create-category' %}" class="btn btn-primary">Continue</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -96,7 +121,7 @@
         <input type="submit" class="btn btn-success" value="Save" />
       </div>
     </form>
-  
+  </div>
 </div>
 
 <script>
