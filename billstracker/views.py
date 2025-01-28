@@ -17,7 +17,7 @@ from django.contrib.auth import login
 
 from dateutil.relativedelta import relativedelta
 
-from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory
+from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User
 
 
 class LoginPage(LoginView):
@@ -326,3 +326,35 @@ class PayBill(LoginRequiredMixin, CreateView):
   
   def get_success_url(self):
     return reverse_lazy('bills-tracker')
+  
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+  model = User
+  context_object_name = 'user'
+  template_name = 'profile.html'
+  fields = ['username',
+            'email',
+            'first_name',
+            'last_name']
+  success_url = reverse_lazy('bills-tracker')
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+
+      return context
+    
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
+    if obj.id != self.request.user.id:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+  def form_valid(self, form):
+      form.instance.id = self.request.user.id
+      
+      return super().form_valid(form)
+  
