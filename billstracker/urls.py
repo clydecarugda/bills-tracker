@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, CreateBill, UpdateBill, PayBill, BillView, DeleteBillDetail, CreateCategory
-from .views import ProfileView
+from .views import ProfileView, PasswordChange
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -18,4 +18,5 @@ urlpatterns = [
     path('delete_billdetail/<int:pk>', DeleteBillDetail.as_view(), name='billdetail-delete'),
     path('create_category/', CreateCategory.as_view(), name='create-category'),
     path('profile/<int:pk>', ProfileView.as_view(), name='profile'),
+    path('profile/passwordchange/<int:pk>', PasswordChange.as_view(), name='password-change'),
 ]

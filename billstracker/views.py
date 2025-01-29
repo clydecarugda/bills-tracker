@@ -13,7 +13,8 @@ from django.views.generic.edit import DeleteView, CreateView, UpdateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate, update_session_auth_hash
+import django.contrib.auth.password_validation as password_validation
 
 from dateutil.relativedelta import relativedelta
 
@@ -358,3 +359,62 @@ class ProfileView(LoginRequiredMixin, UpdateView):
       
       return super().form_valid(form)
   
+
+class PasswordChange(LoginRequiredMixin, UpdateView):
+  model = User
+  context_object_name = 'user'
+  template_name = 'changepassword.html'
+  fields = ['password']
+  success_url = reverse_lazy('bills-tracker')
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      
+      context['password_help_text'] = password_validation.password_validators_help_text_html
+
+      return context
+    
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
+    if obj.id != self.request.user.id:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+  def form_valid(self, form):
+      current_password = form.cleaned_data.get('password')
+      new_password = self.request.POST.get('new_password')
+      re_new_password = self.request.POST.get('re_new_password')
+      
+      check_password = self.request.user.check_password(current_password)
+      
+      if check_password:
+        if new_password != re_new_password:
+          form.add_error(None, 'Both Password field should match')
+          
+          return self.form_invalid(form)         
+        
+      else:
+        form.add_error('password', 'Wrong Password!!')
+        
+        return self.form_invalid(form)
+      
+      try:
+        password_validation.validate_password(new_password)
+        
+        user = form.save(commit=False)
+        
+        user.set_password(new_password)
+        user.save()
+        
+        update_session_auth_hash(self.request, user)
+      
+      except forms.ValidationError as error:
+        form.add_error(None, error)
+
+        return self.form_invalid(form)
+      
+      return super().form_valid(form)
