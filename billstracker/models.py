@@ -85,6 +85,7 @@ class Payment(models.Model):
 class USettings(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   auto_recurring = models.BooleanField(default=True)
+  dark_mode = models.BooleanField(default=False)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now_add=True)
   
