@@ -6,7 +6,7 @@
 
 <div class="row mb-3">
   <div class="col">
-    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Back</a>
+    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary"><i class="bi bi-caret-left"></i></a>
   </div>
 </div>
 
@@ -20,13 +20,13 @@
         <form method="post">
           {% csrf_token %}
           <div class="row mb-2">
-            <div class="col-sm-12 col-md-6 mb-2">
+            <div class="col-sm-12 col-md-12 mb-2">
               <label for="id_payment_type" class="form-label">Payment Method</label>
               {{ form.payment_type|add_attrs:"class=form-control" }}
             </div>
           </div>
           <div class="row mb-2">
-            <div class="col-sm-12 col-md-6 mb-2">
+            <div class="col-sm-12 col-md-12 mb-2">
               <label for="id_payment_reference" class="form-label">Reference #</label>
               {{ form.payment_reference|add_attrs:"class=form-control" }}
             </div>
@@ -48,15 +48,15 @@
             </div>
           </div>
           <div class="row mt-4">
-            <div class="col-sm-12 col-md-9 mb-2">
+            <div class="col-sm-12 col-md-12 mb-2 text-center">
               <label for="id_total_amount" class="form-label"><strong>Total Amount:</strong></label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
-                <input type="number" class="form-control" id="id_total_amount" readonly disabled>
+                <input type="number" class="form-control text-center" id="id_total_amount" readonly disabled>
               </div>
             </div>
           <div class="row mt-3 d-grid gap-2 d-md-flex justify-content-md-end">
-            <input type="submit" class="btn btn-success" value="Pay">
+            <button type="submit" class="btn btn-success"><i class="bi bi-wallet"></i> Pay</button>
           </div>
           </div>
         </form>

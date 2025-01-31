@@ -5,6 +5,7 @@ from django import forms
 from datetime import datetime
 from django.db import transaction
 from django.db.models import Sum
+from django.db.models.functions import ExtractMonth
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.views.generic.list import ListView
@@ -45,11 +46,15 @@ class BillList(LoginRequiredMixin, ListView):
     
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    context['bills'] = context['bills'].filter(user=self.request.user)
+    bills = self.model.objects.annotate(due_month=ExtractMonth('due_date'))
+    bills = bills.filter(user=self.request.user)
+    context['bills'] = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
+    context['date_month_now'] = datetime.now().month
     
-    search_input = self.request.GET.get('search_area') or ''
-    if search_input:
-      context['bills'] = context['bills'].filter(bill_detail__name__icontains=search_input)
+    # search_input = self.request.GET.get('search_area') or ''
+    # context['selected_month'] = self.request.GET.get('selected_month', None)
+    # if search_input:
+    #   context['bills'] = context['bills'].filter(bill_detail__name__icontains=search_input)
     
     return context
  

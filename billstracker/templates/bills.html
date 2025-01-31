@@ -7,51 +7,118 @@
       <h2>Bills List</h2>
   </div> -->
 
-  <div class="row mb-3">
-    <div class="col-sm-12 col-md-6 mb-3">
-      <a href="{% url 'create-bill' %}" class="btn btn-primary">Add</a>
+  <div class="row mb-2 text-end">
+    <div>
+      <button id="tableViewBtn" class="btn btn-outline-primary"><i class="bi bi-table"></i></button>
+      <button id="calendarViewBtn" class="btn btn-outline-secondary"><i class="bi bi-calendar"></i></button>
+    </div>
+  </div>
+
+  <div class="row mb-1">
+    <div class="col-sm-12 col-md-3 mb-2">
+      <a href="{% url 'create-bill' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i>Add Bill {{ selected_month }}</a>
     </div>
 
-    <div class="col-sm-12 col-md-6 mb-3">
+    <div class="col-sm-12 col-md-4 mb-2">
+      <select id="monthFilter" class="form-select me-2">
+        <option value="all">All Months</option>
+        <option value="1" {% if date_month_now == 1 %} selected {% endif %}>January</option>
+        <option value="2" {% if date_month_now == 2 %} selected {% endif %}>February</option>
+        <option value="3" {% if date_month_now == 3 %} selected {% endif %}>March</option>
+        <option value="4" {% if date_month_now == 4 %} selected {% endif %}>April</option>
+        <option value="5" {% if date_month_now == 5 %} selected {% endif %}>May</option>
+        <option value="6" {% if date_month_now == 6 %} selected {% endif %}>June</option>
+        <option value="7" {% if date_month_now == 7 %} selected {% endif %}>July</option>
+        <option value="8" {% if date_month_now == 8 %} selected {% endif %}>August</option>
+        <option value="9" {% if date_month_now == 9 %} selected {% endif %}>September</option>
+        <option value="10" {% if date_month_now == 10 %} selected {% endif %}>October</option>
+        <option value="11" {% if date_month_now == 11 %} selected {% endif %}>November</option>
+        <option value="12" {% if date_month_now == 12 %} selected {% endif %}>December</option>
+      </select>
+    </div>
+
+    <!-- <div class="col-sm-12 col-md-6 mb-2">
       <form method="get">
         <div class="input-group">
           <input type="text" class="form-control" placeholder="Search..." name="search_area" value="{{ search_input }}">
           <button class="btn btn-success" type="submit" id="button-addon2">Search</button>
         </div>
+        <input type="hidden" name="selected_month" id="id_selected_month">
       </form>
+    </div> -->
+
+    <div class="col-sm-12 col-md-5 mb-2">
+      <input type="text" id="id_searchInput" class="form-control" placeholder="Search bills...">
     </div>
   </div>
 
-    <div class="row table-responsive mb-3">
-      <table class="table table-sm table-hover table-striped text-center align-middle">
-        <thead class="table-primary">
-          <tr>
-            <th scope="col">Bill Name</th>
-            <th scope="col">Due Date</th>
-            <th scope="col">Balance</th>
-            <th scope="col">Total Amount</th>
-            <th scope="col">Status</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody class="table-group-divider">
+  <div class="row table-responsive mb-3" id="tableView">
+    <table class="table table-hover table-striped text-center align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">Bill Name</th>
+          <th scope="col">Category</th>
+          <th scope="col">Due Date</th>
+          <th scope="col">Balance</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider" id="billTableBody">
 
-          {% for bill in bills %}
-          <tr>
-            <td><a href="#" class="text-decoration-none text-secondary-emphasis">{{ bill.bill_detail.name }}</a></td>
-            <td>{{ bill.due_date }}</td>
-            <td>&#8369; {{ bill.amount_payable }}</td>
-            <td>&#8369; {{ bill.amount }}</td>
-            <td>{{ bill.payment_status }}</td>
-            <td><a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary">Details</a></td>
-          </tr>
-          {% endfor %}
+        {% for bill in bills %}
+        <tr data-month="{{ bill.due_month }}">
+          <td>{{ bill.bill_detail.name }}</td>
+          <td>{{ bill.bill_detail.category.name }}</td>
+          <td>{{ bill.due_date }}</td>
+          <td>&#8369; {{ bill.amount_payable }}</td>
+          <td><a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary"><i class="bi bi-info-circle"></i> Details</a></td>
+        </tr>
+        {% endfor %}
 
-        </tbody>
-      </table>
-    </div>
-  
+      </tbody>
+    </table>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const tableView = document.getElementById("tableView");
+      const monthFilter = document.getElementById("monthFilter");
+      const searchInput = document.getElementById("id_searchInput");
+    
+      // Month Filter
+      monthFilter.addEventListener("change", function() {
+        let selectedMonth = this.value;
+        filterBills(selectedMonth, searchInput.value);  // Pass the current search value
+      });
+    
+      // Function to filter bills by selected month and search term
+      function filterBills(selectedMonth, searchValue) {
+        document.querySelectorAll("#billTableBody tr").forEach(row => {
+          let billMonth = row.getAttribute("data-month");
+          let rowText = ""; 
+    
+          row.querySelectorAll("td").forEach(td => {
+            rowText += td.innerText.toLowerCase(); // Concatenate all text content
+          });
+    
+          // Filter by month and search term
+          const matchesMonth = (selectedMonth === "all" || selectedMonth === billMonth);
+          const matchesSearch = rowText.includes(searchValue.toLowerCase());
+          
+          row.style.display = (matchesMonth && matchesSearch) ? "" : "none"; // Show if both conditions match
+        });
+      }
+    
+      // Check selected month and search value on page load
+      filterBills(monthFilter.value, searchInput.value);
+    
+      // Search functionality
+      searchInput.addEventListener("input", function() {
+        let searchValue = this.value;
+        filterBills(monthFilter.value, searchValue);  // Pass the current selected month and search value
+      });
+    });
+  </script>
   
 {% endblock content %}
   
