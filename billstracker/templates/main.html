@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" {% if user.userprofile.dark_mode %}data-bs-theme="dark"{% endif %}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +12,7 @@
 
   <body>
 
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar sticky-top navbar-expand-md bg-info-subtle">
       <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'main' %}">[Name]</a>
         <button
@@ -22,8 +22,7 @@
           data-bs-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent"
           aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+          aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -35,18 +34,25 @@
 
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
+              <a class="nav-link dropdown-toggle"
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                Hi {% if request.user.first_name %} {{ request.user.first_name }} {% else %} {{ request.user }} {% endif %}
+                aria-expanded="false">
+                {% if user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" 
+                 alt="{% if request.user.first_name %} {{ request.user.first_name }} {% else %} {{ request.user }} {% endif %}"
+                 class="rounded-circle" 
+                 width="33" height="33"> 
+                {% else %}
+                  Hi, {% if request.user.first_name %} {{ request.user.first_name }} {% else %} {{ request.user }} {% endif %}
+                {% endif %}
               </a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="{% url 'profile' user.id %}"><i class="bi bi-person"></i> Profile</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi bi-sliders"></i> Settings</a></li>
+                {% if request.user.is_staff %}
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-sliders"></i> Admin</a></li>
+                {% endif %}
                 <li><hr class="dropdown-divider" /></li>
                 <li>
                   <form

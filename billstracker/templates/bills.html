@@ -73,7 +73,7 @@
           <th scope="col">Category</th>
           <th scope="col">Due Date</th>
           <th scope="col">Balance</th>
-          <th scope="col"></th>
+          <th scope="col" class="text-center text-nowrap w-auto"></th>
         </tr>
       </thead>
       <tbody class="table-group-divider" id="billTableBody">
@@ -84,11 +84,10 @@
           <td>{{ bill.bill_detail.category.name }}</td>
           <td>{{ bill.due_date }}</td>
           <td>&#8369; {{ bill.amount_payable }}</td>
-          <td>
-            <a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-info-circle"></i></a>
-            <a href="{% url 'bill-update' bill.id %}" class="btn btn-outline-success btn-sm"><i class="bi bi-pencil-square"></i></a>
-            <a href="{% url 'pay-bill' bill.id bill.bill_detail.id %}" class="btn btn-outline-warning btn-sm {% if bill.amount_payable <= 0 %} disabled {% endif %}"><i class="bi bi-wallet2"></i></a>
-
+          <td class="text-center text-nowrap w-auto">
+            <a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-info-circle"></i></a>
+            <a href="{% url 'bill-update' bill.id %}" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-pencil-square"></i></a>
+            <a href="{% url 'pay-bill' bill.id bill.bill_detail.id %}" class="btn btn-outline-warning btn-sm me-1 {% if bill.amount_payable <= 0 %} disabled {% endif %}"><i class="bi bi-wallet2"></i></a>
           </td>
         </tr>
         {% endfor %}

@@ -348,6 +348,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
   
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
+      context['userprofile'] = self.request.user.userprofile
 
       return context
     
@@ -361,8 +362,20 @@ class ProfileView(LoginRequiredMixin, UpdateView):
   
   def form_valid(self, form):
       form.instance.id = self.request.user.id
+      response = super().form_valid(form)
       
-      return super().form_valid(form)
+      profile = self.request.user.userprofile
+      if self.request.FILES.get('prof_picture'):
+        profile.profile_picture = self.request.FILES['prof_picture']
+        
+      if self.request.POST.get('dark_mode') == 'on':
+        profile.dark_mode = True
+      else:
+        profile.dark_mode = False
+        
+      profile.save()
+      
+      return response
   
 
 class PasswordChange(LoginRequiredMixin, UpdateView):
