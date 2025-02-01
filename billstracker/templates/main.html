@@ -12,9 +12,9 @@
 
   <body>
 
-    <nav class="navbar sticky-top navbar-expand-md bg-info-subtle">
+    <nav class="navbar sticky-top navbar-expand-md" style="background-color: #e3f2fd;">
       <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'main' %}">[Name]</a>
+        <a class="navbar-brand" href="{% url 'main' %}">Money Tracker</a>
         <button
           class="navbar-toggler"
           type="button"
@@ -26,9 +26,12 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <ul class="navbar-nav nav-underline me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link {% if request.path == '/bills_tracker/' %}active{% endif %}" aria-current="page" href="{% url 'bills-tracker' %}">Bills Tracker</a>
+              <a class="nav-link {% if request.path == '/bills-tracker/' %}active{% endif %}" aria-current="page" href="{% url 'bills-tracker' %}">Bills</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {% if request.path == '/money-tracker/' %}active{% endif %}" aria-current="page" href="#">Money</a>
             </li>
           </ul>
 
