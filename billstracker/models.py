@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+def user_directory_path(instance, filename):
+  return f"profile_pics/{instance.user.id}/{filename}"
+
+
 class PaymentStatus(models.Model):
   name = models.CharField(max_length=30)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -80,17 +84,12 @@ class Payment(models.Model):
   
   def __str__(self):
     return self.bill.bill_detail.name
-  
-
-class USettings(models.Model):
-  user = models.ForeignKey(User, on_delete=models.CASCADE)
-  auto_recurring = models.BooleanField(default=True)
+    
+    
+class UserProfile(models.Model):
+  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  profile_picture = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
   dark_mode = models.BooleanField(default=False)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
   
   def __str__(self):
-    return self.auto_recurring
-  
-  class Meta:
-    verbose_name_plural = 'USettings'
+        return self.user.username

@@ -1,10 +1,9 @@
 from django.contrib import admin
-from .models import Payment, PaymentStatus, BillDetail, Bill, USettings, BillCategory, PaymentType
+from .models import Payment, PaymentStatus, BillDetail, Bill, BillCategory, PaymentType
 
 admin.site.register(Payment)
 admin.site.register(PaymentStatus)
 admin.site.register(BillDetail)
 admin.site.register(Bill)
 admin.site.register(BillCategory)
-admin.site.register(USettings)
 admin.site.register(PaymentType)
