@@ -21,3 +21,7 @@ settings.py
 
 # Ignore vscode debugging files
 .vscode/
+
+# Ignore media files
+
+.media/*
