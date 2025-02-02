@@ -10,16 +10,16 @@
   <div class="row mb-2 text-end">
     <div>
       <button id="tableViewBtn" class="btn btn-outline-primary"><i class="bi bi-table"></i></button>
-      <button id="calendarViewBtn" class="btn btn-outline-secondary"><i class="bi bi-calendar"></i></button>
+      <button id="gridViewBtn" class="btn btn-outline-secondary"><i class="bi bi-grid"></i></button>
     </div>
   </div>
 
   <div class="row mb-1">
-    <div class="col-sm-12 col-md-2 mb-2">
+    <div class="col-sm-12 col-md-5 mb-2">
       <a href="{% url 'create-bill' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i>Add Bill {{ selected_month }}</a>
     </div>
 
-    <div class="col-sm-12 col-md-2 mb-2">
+    <div class="col-sm-11 col-md-2 mb-2">
       <select id="monthFilter" class="form-select me-2">
         <option value="all">All Months</option>
         <option value="1" {% if date_month_now == 1 %} selected {% endif %}>January</option>
@@ -60,7 +60,7 @@
       </form>
     </div> -->
 
-    <div class="col-sm-12 col-md-6 mb-2">
+    <div class="col-sm-12 col-md-3 mb-2">
       <input type="text" id="id_searchInput" class="form-control" placeholder="Search bills...">
     </div>
   </div>
@@ -96,13 +96,40 @@
     </table>
   </div>
 
+  <!-- Calendar View -->
+   <div id="gridView" class="">
+    <div id="calendar"></div>
+   </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const tableView = document.getElementById("tableView");
+      const calendarView = document.getElementById("calendarView");
+      const tableViewBtn = document.getElementById("tableViewBtn");
+      const gridViewBtn = document.getElementById("gridViewBtn");
       const monthFilter = document.getElementById("monthFilter");
       const yearFilter = document.getElementById("yearFilter");
       const searchInput = document.getElementById("id_searchInput");
-      
+
+      // Switch View
+      document.getElementById("tableViewBtn").addEventListener("click", function() {
+        tableView.classList.remove("d-none");
+        calendarView.classList.add("d-none");
+        tableViewBtn.classList.remove("btn-outline-secondary");
+        tableViewBtn.classList.add("btn-outline-primary");
+        gridViewBtn.classList.remove("btn-outline-primary");
+        gridViewBtn.classList.add("btn-outline-secondary");
+      });
+
+      document.getElementById("gridViewBtn").addEventListener("click", function() {
+        tableView.classList.add("d-none");
+        calendarView.classList.remove("d-none");
+        tableViewBtn.classList.add("btn-outline-secondary");
+        tableViewBtn.classList.remove("btn-outline-primary");
+        gridViewBtn.classList.add("btn-outline-primary");
+        gridViewBtn.classList.remove("btn-outline-secondary");
+      });
+        
       // Month and Year Filter
       monthFilter.addEventListener("change", function() {
         let selectedMonth = this.value;
@@ -140,10 +167,11 @@
       filterBills(monthFilter.value, yearFilter.value, searchInput.value);
       
       // Search functionality
-      searchInput.addEventListener("input", function() {
+      searchInput.addEventListener("keyup", function() {
         let searchValue = this.value;
-        filterBills(monthFilter.value, yearFilter.value, searchValue);  // Pass the current selected month, year, and search value
+        filterBills(monthFilter.value, yearFilter.value, searchValue); 
       });
+
     });
   </script>  
   

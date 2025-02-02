@@ -5,7 +5,6 @@ from django import forms
 from datetime import datetime
 from django.db import transaction
 from django.db.models import Sum
-from django.db.models.functions import ExtractMonth, ExtractYear
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.views.generic.list import ListView
@@ -19,7 +18,7 @@ import django.contrib.auth.password_validation as password_validation
 
 from dateutil.relativedelta import relativedelta
 
-from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User
+from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User, AuditLog
 
 
 class LoginPage(LoginView):
