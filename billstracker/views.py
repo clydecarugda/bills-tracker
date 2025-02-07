@@ -494,3 +494,26 @@ class MoneyAccountList(LoginRequiredMixin, ListView):
       raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
     
     return obj
+  
+  
+class MoneyAccountAdd(LoginRequiredMixin, CreateView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  fields = ['account_group',
+            'name',
+            'amount',
+            'description']
+  template_name = 'money_account_add.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-accounts')
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+
+      return context
+  
+  def form_valid(self, form):
+      form.instance.user = self.request.user
+      
+      return super().form_valid(form)

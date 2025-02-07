@@ -1,41 +1,42 @@
 {% extends "main.html" %}
 
-
 {% block content %}
 
 <div class="row">
   {% include 'money_sidebar.html' %}
 
-  <div class="col-sm-12 col-md-9 flex-grow-1 p-3">
-    <!-- <h4>Money Accounts</h4> -->
-    {% for group in account_groups %}
+    <div class="col-sm-12 col-md-9 flex-grow-1 p-3">
+      <!-- <h4>Money Accounts</h4> -->
+       <a href="{% url 'money-accounts-add' %}" class="btn btn-info btn-sm float-end mb-3"><i class="bi bi-plus"></i> Add</a>
 
-    <table class="table table-hover table-sm table-responsive caption-top">
-      <thead>
-        <tr>
-          <th>{{ group.name }}</th>
-          <th class="text-end{% if account.amount < 0 %} text-danger{% endif %}">{{ group.total_amount|default:0 }}</th>
-        </tr>
-      </thead>
-      <tbody class="table-group-divider">
-        {% for account in group.accounts %}
-        
+      {% for group in account_groups %}
+
+      <table class="table table-hover table-sm table-responsive caption-top">
+        <thead>
           <tr>
-            <td class="w-50{% if account.amount < 0 %} text-danger{% endif %}">{{ account.name }}</td>
-            <td class="w-50 text-end{% if account.amount < 0 %} text-danger{% endif %}">{{ account.amount }}</td>
+            <th>{{ group.name }}</th>
+            <th class="text-end{% if account.amount < 0 %} text-danger{% else %} text-success{% endif %}">{{ group.total_amount|default:0 }}</th>
           </tr>
-        
-        {% empty %}
-          <tr>
-            <td colspan="2" class="text-center">No accounts in this group</td>
-          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for account in group.accounts %}
 
-        {% endfor %}
-      </tbody>
-    </table>
+            <tr>
+              <td class="w-50{% if account.amount < 0 %} text-danger{% endif %}"><a href="#" class="link-body-emphasis text-decoration-none">{{ account.name }}</a></td>
+              <td class="w-50 text-end{% if account.amount < 0 %} text-danger{% endif %}">{{ account.amount }}</td>
+            </tr>
+          
+          {% empty %}
+            <tr>
+              <td colspan="2" class="text-center">No accounts in this group</td>
+            </tr>
 
-    {% endfor %}
-  </div>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% endfor %}
+    </div>
 
 </div>
   

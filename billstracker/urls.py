@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, CreateBill, UpdateBill, PayBill, BillView, DeleteBillDetail, CreateCategory
-from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList
+from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -21,4 +21,5 @@ urlpatterns = [
     path('profile/passwordchange/<int:pk>', PasswordChange.as_view(), name='password-change'),
     path('money-tracker/dashboard', AccountView.as_view(), name='money-dashboard'),
     path('money-tracker/accounts', MoneyAccountList.as_view(), name='money-accounts'),
+    path('money-tracker/accounts/add', MoneyAccountAdd.as_view(), name='money-accounts-add'),
 ]
