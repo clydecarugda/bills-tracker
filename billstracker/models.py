@@ -6,10 +6,51 @@ def user_directory_path(instance, filename):
   return f"profile_pics/{instance.user.id}/{filename}"
 
 
+# Money Tracker
+class AccountGroup(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  name = models.CharField(max_length=30)
+
+  def __str__(self):
+    return self.name
+  
+  class Meta:
+    ordering = ['name']
+  
+
+class MoneyAccount(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  account_group = models.ForeignKey(AccountGroup, on_delete=models.CASCADE)
+  name = models.CharField(max_length=30)
+  amount = models.FloatField(default=0)
+  description = models.TextField(null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return self.name
+  
+  
+class AuditLog(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  action_type = models.CharField(max_length=30)
+  model_affected = models.CharField(max_length=100)
+  record_id = models.UUIDField()
+  old_value = models.TextField()
+  new_value = models.TextField()
+  ip_address = models.CharField(max_length=15)
+  user_agent = models.CharField(max_length=255)
+  action_description = models.TextField()
+  action_success = models.BooleanField()
+  url = models.CharField(max_length=200)
+  referer_url = models.CharField(max_length=200)
+  
+
+# Bills
 class PaymentStatus(models.Model):
   name = models.CharField(max_length=30)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -21,7 +62,7 @@ class PaymentStatus(models.Model):
 class BillCategory(models.Model):
   name = models.CharField(max_length=30)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -42,7 +83,7 @@ class BillDetail(models.Model):
                                            ('yearly', 'Yearly')],
                                   default='one-time')
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -56,31 +97,24 @@ class Bill(models.Model):
   amount_payable = models.FloatField()
   payment_status = models.ForeignKey(PaymentStatus, default=1, on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.bill_detail.name
   
   class Meta:
     ordering = ['payment_status', 'due_date']
-    
-
-class PaymentType(models.Model):
-  name = models.CharField(max_length=25)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
   
-  def __str__(self):
-    return self.name
 
 class Payment(models.Model):
   bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
-  payment_type = models.ForeignKey(PaymentType, on_delete=models.CASCADE)
+  account_type = models.ForeignKey(MoneyAccount, on_delete=models.CASCADE, null=True)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
+  note = models.TextField(null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.bill.bill_detail.name

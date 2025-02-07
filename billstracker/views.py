@@ -18,7 +18,7 @@ import django.contrib.auth.password_validation as password_validation
 
 from dateutil.relativedelta import relativedelta
 
-from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User, AuditLog
+from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User, AuditLog, AccountGroup, MoneyAccount
 
 
 class LoginPage(LoginView):
@@ -435,3 +435,62 @@ class PasswordChange(LoginRequiredMixin, UpdateView):
         return self.form_invalid(form)
       
       return super().form_valid(form)
+    
+
+class AccountView(LoginRequiredMixin, ListView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  template_name = 'money_dashboard.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      
+      context['money_account'] = self.model.objects.filter(user=self.request.user)
+      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
+
+      return context
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
+    if obj.user.id != self.request.user.id:
+      raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
+    
+    return obj
+  
+class MoneyAccountList(LoginRequiredMixin, ListView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  template_name = 'money_accounts.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      
+      account_groups = AccountGroup.objects.filter(user=self.request.user)
+      money_accounts = self.model.objects.filter(user=self.request.user)
+      
+      account_group_total = account_groups.model.objects.annotate(total_amount=Sum('moneyaccount__amount'))
+      
+      for group in account_group_total:
+        group.accounts = money_accounts.model.objects.filter(account_group=group)
+      
+      context['money_account'] = money_accounts
+      context['account_group'] = account_groups
+      
+      context = {
+        'account_groups': account_group_total,
+      }
+
+      return context
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
+    if obj.user.id != self.request.user.id:
+      raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
+    
+    return obj

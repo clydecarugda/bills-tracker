@@ -31,7 +31,7 @@
               <a class="nav-link {% if request.path == '/bills-tracker/' %}active{% endif %}" aria-current="page" href="{% url 'bills-tracker' %}"><i class="bi bi-receipt-cutoff"></i> Bills</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == '/money-tracker/' %}active{% endif %}" aria-current="page" href="#"><i class="bi bi-cash-stack"></i> Money</a>
+              <a class="nav-link {% if request.path == '/money-tracker/' %}active{% endif %}" aria-current="page" href="{% url 'money-dashboard' %}"><i class="bi bi-cash-stack"></i> Money</a>
             </li>
           </ul>
 
@@ -79,7 +79,7 @@
       </div>
     </nav>
 
-    <div class="container-fluid mt-3">
+    <div class="container-fluid">
       
       {% block content %}
         
