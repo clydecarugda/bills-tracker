@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django import forms
 from datetime import datetime
 from django.db import transaction
@@ -10,6 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
+from django.contrib import messages
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -478,23 +479,10 @@ class MoneyAccountList(LoginRequiredMixin, ListView):
       for group in account_group_total:
         group.accounts = money_accounts.model.objects.filter(account_group=group)
       
-      context['money_account'] = money_accounts
-      context['account_group'] = account_groups
-      
-      context = {
-        'account_groups': account_group_total,
-      }
+      context['money_account_list'] = money_accounts
+      context['account_groups'] = account_group_total
 
       return context
-  
-  def get_object(self, queryset = None):
-    obj = super().get_object(queryset=queryset)
-    
-    if obj.user.id != self.request.user.id:
-      raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
-    
-    return obj
-  
   
 class MoneyAccountAdd(LoginRequiredMixin, CreateView):
   model = MoneyAccount
@@ -514,6 +502,304 @@ class MoneyAccountAdd(LoginRequiredMixin, CreateView):
       return context
   
   def form_valid(self, form):
-      form.instance.user = self.request.user
+    form.instance.user = self.request.user
+    
+    with transaction.atomic():
+      form_amount = self.request.POST.get('amount')
+      
+      response = super().form_valid(form)
+      account_id = self.object
+      
+      TransactionHistoryLogger.log_transaction(
+        user_id = self.request.user,
+        bill_id = None,
+        payment_reference = None,
+        account_id = account_id,
+        transaction_type = 'New Money Account',
+        amount = form_amount,
+        fee_amount = 0,
+        note = None,
+        payment_date_time = datetime.now()
+      )
+      
+    return response
+    
+    
+class MoneyAccountView(LoginRequiredMixin, DetailView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  template_name = 'money_account_view.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    
+    if obj.user.id != self.request.user.id:
+      raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
+    
+    return obj
+  
+class MoneyAccountDelete(LoginRequiredMixin, DeleteView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-accounts')
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+
+class MoneyAccountUpdate(LoginRequiredMixin, UpdateView):
+  model = MoneyAccount
+  context_object_name = 'money_account'
+  template_name = 'money_account_edit.html'
+  fields = ['name',
+            'account_group',
+            'amount',
+            'description']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset)
+    
+    if obj.user != self.request.user:
+      raise Http404("The item you attempted to view does not exist or you don't have permission to view it.")
+    
+    return obj
+  
+  def form_valid(self, form):
+    form.instance.user = self.request.user
+    
+    response = super().form_valid(form)
+    
+    return redirect('money-accounts-view', pk=self.kwargs['pk'])
+
+
+class MoneyTransfer(LoginRequiredMixin, CreateView):
+  model = Payment
+  context_object_name = 'payment'
+  fields = ['amount',
+            'fee_amount',
+            'note',
+            'payment_date_time']
+  template_name = 'money_transfer.html'
+  login_url = ' login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-accounts')
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['datetime_now'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+      context['money_account_list'] = MoneyAccount.objects.filter(user=self.request.user)
+
+      return context
+
+  def form_valid(self, form):
+      sender_id = self.request.POST.get('sender_account')
+      receiver_id = self.request.POST.get('receiver_account')
+      amount = float(form.cleaned_data.get('amount'))
+      fee_amount = float(form.cleaned_data.get('fee_amount'))
+      payment_datetime = form.cleaned_data.get('payment_date_time')
+      note = form.cleaned_data.get('note')
+      
+      sender_account = get_object_or_404(MoneyAccount, id=sender_id, user=self.request.user)
+      receiver_account = get_object_or_404(MoneyAccount, id=receiver_id, user=self.request.user)
+      
+      if sender_id == receiver_id:
+        form.add_error(None, 'You cannot transfer to the same account!')
+        
+        return self.form_invalid(form)
+      
+      else:
+        with transaction.atomic():
+          sender_account.amount -= amount + fee_amount
+          sender_account.save()
+          
+          receiver_account.amount += amount
+          receiver_account.save()
+          
+          # Create transaction history - sender
+          sender_payment = Payment(
+            user = self.request.user,
+            account = sender_account,
+            transaction_type = 'Money Transfer',
+            amount = -abs(amount),
+            fee_amount = -abs(fee_amount),
+            note = note,
+            payment_date_time = payment_datetime
+          )
+          
+          sender_payment.save()
+          
+          # Create transaction history - receiver
+          receiver_payment = Payment(
+            user = self.request.user,
+            account = receiver_account,
+            transaction_type = 'Money Transfer',
+            amount = amount,
+            fee_amount = 0,
+            note = note,
+            payment_date_time = payment_datetime
+          )
+          
+          receiver_payment.save()
       
       return super().form_valid(form)
+
+
+class TransactionHistory(LoginRequiredMixin, ListView):
+  model = Payment
+  context_object_name = 'payments'
+  template_name = 'money_transaction_history.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context['payments'] = self.model.objects.filter(user=self.request.user)
+    
+    return context
+  
+
+class AccountGroupList(LoginRequiredMixin, ListView):
+  model = AccountGroup
+  context_object_name = 'account_groups'
+  template_name = 'money_account_groups.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['account_groups'] = self.model.objects.filter(user=self.request.user)
+      
+      return context
+    
+
+class AccountGroupAdd(LoginRequiredMixin, CreateView):
+  model = AccountGroup
+  context_object_name = 'account_groups'
+  template_name = 'money_account_group_add.html'
+  fields = ['name']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-account-groups')
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      
+      return context
+    
+  def form_valid(self, form):
+      form_name = form.cleaned_data.get('name')
+      
+      check_name = self.model.objects.filter(user=self.request.user, name=form_name).exists()
+      
+      if check_name:
+        form.add_error('name', 'The account group already exists!')
+        
+        return self.form_invalid(form)
+      else:
+        form.instance.user = self.request.user
+      
+      return super().form_valid(form)
+    
+
+class AccountGroupView(LoginRequiredMixin, DetailView):
+  model = AccountGroup
+  context_object_name = 'account_groups'
+  template_name = 'money_account_group_view.html'
+  login_url = 'login'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+
+class AccountGroupEdit(LoginRequiredMixin, UpdateView):
+  model = AccountGroup
+  context_object_name = 'account_groups'
+  template_name = 'money_account_group_edit.html'
+  fields = ['name']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+  def form_valid(self, form):
+      form_name = form.cleaned_data.get('name')
+      
+      check_name = self.model.objects.filter(user=self.request.user, name=form_name).exists()
+      
+      if check_name:
+        form.add_error('name', 'The account group already exists!')
+        
+        return self.form_invalid(form)
+      else:
+        form.instance.user = self.request.user
+      
+      return super().form_valid(form)
+    
+
+class AccountGroupDelete(LoginRequiredMixin, DeleteView):
+  model = AccountGroup
+  context_object_name = 'account_groups'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-account-groups')
+  
+  def get_object(self, queryset = None):
+    obj = super().get_object(queryset=queryset)
+    if obj.user != self.request.user:
+      raise Http404("Product does not exist or you do not have permission to view it.")
+    
+    return obj
+  
+      
+class TransactionHistoryLogger:
+  @staticmethod
+  def log_transaction(user_id, bill_id, payment_reference, account_id, transaction_type, amount, fee_amount, note, payment_date_time):
+    Payment.objects.create(
+      user = user_id,
+      bill = bill_id,
+      payment_reference = payment_reference,
+      account = account_id,
+      transaction_type = transaction_type,
+      amount = amount,
+      fee_amount = fee_amount,
+      note = note,
+      payment_date_time = payment_date_time
+    )
+    
+
+class AuditLogger:
+  @staticmethod
+  def log_audit(user, action_type, model_affected, record_id, old_value, new_value, ip_address, user_agent, action_description, action_success, url, referer_url):
+    AuditLog.objects.create(
+      user = user,
+      action_type = action_type,
+      model_affected = model_affected,
+      record_id = record_id,
+      old_value = old_value,
+      new_value = new_value,
+      ip_address = ip_address,
+      user_agent = user_agent,
+      action_description = action_description,
+      action_success = action_success,
+      url = url,
+      referer_url = referer_url
+    )

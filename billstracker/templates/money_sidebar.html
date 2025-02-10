@@ -3,22 +3,22 @@
   <h4 class="mb-4 text-center">Money Tracker</h4>
   <ul class="nav nav-pills nav-fill flex-column">
     <li class="nav-item">
-      <a class="nav-link {% if request.path == '/money-tracker/dashboard' %}active{% endif %}" href="{% url 'money-dashboard' %}">
+      <a class="nav-link {% if '/money-tracker/dashboard' in request.path %}active{% endif %}" href="{% url 'money-dashboard' %}">
         <i class="bi bi-house-door"></i> Dashboard
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if request.path == '/money-tracker/accounts' %}active{% endif %}" href="{% url 'money-accounts' %}">
+      <a class="nav-link {% if '/money-tracker/accounts' in request.path %}active{% endif %}" href="{% url 'money-accounts' %}">
         <i class="bi bi-wallet2"></i> Money Accounts
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if request.path == '/money-tracker/account-group' %}active{% endif %}" href="#">
+      <a class="nav-link {% if '/money-tracker/account-groups' in request.path %}active{% endif %}" href="{% url 'money-account-groups' %}">
         <i class="bi bi-collection"></i> Account Groups
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {% if request.path == '/money-tracker/history' %}active{% endif %}" href="#">
+      <a class="nav-link {% if '/money-tracker/transaction-history'  in request.path%}active{% endif %}" href="{% url 'money-transaction-history' %}">
         <i class="bi bi-list-check"></i> Transaction History
       </a>
     </li>
@@ -39,22 +39,22 @@
   <div class="offcanvas-body">
     <ul class="nav nav-pills nav-fill flex-column">
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/money-tracker/dashboard' %}active{% endif %}" href="{% url 'money-dashboard' %}">
+        <a class="nav-link {% if '/money-tracker/dashboard in request.path' %}active{% endif %}" href="{% url 'money-dashboard' %}">
           <i class="bi bi-house-door"></i> Dashboard
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/money-tracker/accounts' %}active{% endif %}" href="{% url 'money-accounts' %}">
+        <a class="nav-link {% if '/money-tracker/accounts' in request.path %}active{% endif %}" href="{% url 'money-accounts' %}">
           <i class="bi bi-wallet2"></i> Money Accounts
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/money-tracker/account-group' %}active{% endif %}" href="#">
+        <a class="nav-link {% if '/money-tracker/account-groups' in request.path %}active{% endif %}" href="{% url 'money-account-groups' %}">
           <i class="bi bi-collection"></i> Account Groups
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link {% if request.path == '/money-tracker/history' %}active{% endif %}" href="#">
+        <a class="nav-link {% if '/money-tracker/transaction-history'  in request.path%}active{% endif %}" href="{% url 'money-transaction-history' %}">
           <i class="bi bi-list-check"></i> Transaction History
         </a>
       </li>

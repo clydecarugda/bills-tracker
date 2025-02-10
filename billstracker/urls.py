@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, CreateBill, UpdateBill, PayBill, BillView, DeleteBillDetail, CreateCategory
-from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd
+from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd, MoneyAccountView, MoneyAccountDelete, MoneyAccountUpdate
+from .views import MoneyTransfer, TransactionHistory, AccountGroupList, AccountGroupAdd, AccountGroupDelete, AccountGroupView, AccountGroupEdit
+
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
@@ -22,4 +24,14 @@ urlpatterns = [
     path('money-tracker/dashboard', AccountView.as_view(), name='money-dashboard'),
     path('money-tracker/accounts', MoneyAccountList.as_view(), name='money-accounts'),
     path('money-tracker/accounts/add', MoneyAccountAdd.as_view(), name='money-accounts-add'),
+    path('money-tracker/accounts/<int:pk>', MoneyAccountView.as_view(), name='money-accounts-view'),
+    path('money-tracker/accounts/delete/<int:pk>', MoneyAccountDelete.as_view(), name='money-accounts-delete'),
+    path('money-tracker/accounts/edit/<int:pk>', MoneyAccountUpdate.as_view(), name='money-accounts-edit'),
+    path('money-tracker/accounts/transfer', MoneyTransfer.as_view(), name='money-accounts-transfer'),
+    path('money-tracker/transaction-history', TransactionHistory.as_view(), name='money-transaction-history'),
+    path('money-tracker/account-groups', AccountGroupList.as_view(), name='money-account-groups'),
+    path('money-tracker/account-groups/add', AccountGroupAdd.as_view(), name='money-account-group-add'),
+    path('money-tracker/account-groups/<int:pk>', AccountGroupView.as_view(), name='money-account-group-view'),
+    path('money-tracker/account-groups/<int:pk>/edit', AccountGroupEdit.as_view(), name='money-account-group-edit'),
+    path('money-tracker/account-groups/<int:pk>/delete', AccountGroupDelete.as_view(), name='money-account-group-delete'),
 ]

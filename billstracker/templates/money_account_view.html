@@ -1,0 +1,72 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row">
+  {% include 'money_sidebar.html' %}
+
+  <div class="col-sm-12 col-md-9 flex-grow-1 p-4">
+    <h4>Money Account</h4>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 mb-2">
+        <label for="id_account_group" class="form-label">Account Group</label>
+        <input type="text" class="form-control" value="{{ money_account.account_group }}" readonly>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 col-md-6 mb-2">
+        <label for="id_name" class="form-label">Name</label>
+        <input type="text" name="name" id="id_name" class="form-control" value="{{ money_account.name }}" readonly>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-2">
+        <label for="id_amount" class="form-label">Amount</label>
+        <div class="input-group">
+          <span class="input-group-text">&#8369;</span>
+          <input type="number" step="Any" name="amount" id="id_amount" class="form-control" value="{{ money_account.amount }}" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 col-md-12 mb-2">
+        <label for="id_description" class="form-label">Description</label>
+        <textarea rows="5" name="description" id="id_description" class="form-control" readonly>{{ money_account.description }}</textarea>
+      </div>
+    </div>
+
+    <a href="{% url 'money-accounts-edit' money_account.id %}" class="btn btn-success"><i class="bi bi-pencil"></i> Edit</a>
+    <!-- Delete Button -->
+    <button type="button" class="btn btn-danger float-end" data-bs-toggle="modal" data-bs-target="#deleteAccount"><i class="bi bi-trash"></i> Delete</button>
+
+    <!-- Modal Delete-->
+    <div class="modal fade" id="deleteAccount" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deleteAccountLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="deleteAccountLabel">Delete Bill Info</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <p>Are you sure you want to delete the following Account?</p>
+            <h6><strong>Account Name: </strong>{{ money_account.name }}</h6>
+            <h6><strong>Account Group: </strong>{{ money_account.account_group }}</h6>
+            <h6><strong>Amount: </strong>&#8369;{{ money_account.amount }}</h6>
+          </div>
+          <div class="modal-footer">
+            <form id="deleteForm" method="POST" action="{% url 'money-accounts-delete' money_account.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Yes</button>
+            </form>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+  
+{% endblock content %}

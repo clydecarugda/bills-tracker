@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
 def user_directory_path(instance, filename):
@@ -16,6 +17,9 @@ class AccountGroup(models.Model):
   
   class Meta:
     ordering = ['name']
+    
+  def get_absolute_url(self):
+    return reverse('money-account-group-view', kwargs={'pk': self.pk}) 
   
 
 class MoneyAccount(models.Model):
@@ -29,6 +33,9 @@ class MoneyAccount(models.Model):
   
   def __str__(self):
     return self.name
+  
+  def get_absolute_url(self):
+    return reverse('money-accounts-view', kwargs={'pk': self.pk}) 
   
   
 class AuditLog(models.Model):
@@ -107,17 +114,23 @@ class Bill(models.Model):
   
 
 class Payment(models.Model):
-  bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
+  user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+  bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays', null=True)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
-  account_type = models.ForeignKey(MoneyAccount, on_delete=models.CASCADE, null=True)
+  account = models.ForeignKey(MoneyAccount, on_delete=models.CASCADE, null=True)
+  transaction_type = models.CharField(max_length=25, null=True)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
   note = models.TextField(null=True, blank=True)
+  payment_date_time = models.DateTimeField(null=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
-    return self.bill.bill_detail.name
+    return self.transaction_type
+  
+  class Meta:
+    ordering = ['-payment_date_time']
     
     
 class UserProfile(models.Model):
