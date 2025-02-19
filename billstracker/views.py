@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.http import Http404, HttpResponseRedirect
-from django import forms
+from django.utils.timezone import now
 from datetime import datetime
+from django import forms
 from django.db import transaction
 from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,10 +17,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib.auth import login, authenticate, update_session_auth_hash
 import django.contrib.auth.password_validation as password_validation
+import re
 
 from dateutil.relativedelta import relativedelta
 
-from .models import BillDetail, Bill, Payment, PaymentStatus, BillCategory, User, AuditLog, AccountGroup, MoneyAccount
+from .models import BillDetail, Bill, Payment, PaymentStatus, User, AuditLog, AccountGroup, MoneyAccount, Category
 
 
 class LoginPage(LoginView):
@@ -31,7 +33,7 @@ class LoginPage(LoginView):
     return reverse_lazy('main')
   
 
-class MainPage(LoginRequiredMixin ,TemplateView):
+class MainPage(LoginRequiredMixin, TemplateView):
   template_name = 'main_page.html'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
@@ -48,6 +50,7 @@ class BillList(LoginRequiredMixin, ListView):
     context = super().get_context_data(**kwargs)
     bills = self.model.objects.filter(user=self.request.user)
     context['bills'] = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
+    context['datetime_now'] = datetime.now().date()
     context['date_month_now'] = datetime.now().month
     context['date_year_now'] = datetime.now().year
     
@@ -72,7 +75,7 @@ class CreateBill(LoginRequiredMixin, CreateView):
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
       
-      context['category'] = BillCategory.objects.all()
+      context['category'] = Category.objects.filter(user=self.request.user, category_type='Expense')
       context['is_recurring_choices'] = BillDetail._meta.get_field('is_recurring').choices
       
       return context
@@ -84,7 +87,7 @@ class CreateBill(LoginRequiredMixin, CreateView):
     form_due_date_primary = form.cleaned_data['due_date']
     
     with transaction.atomic():
-      category_instance = BillCategory.objects.get(id=self.request.POST.get('category'))
+      category_instance = Category.objects.get(id=self.request.POST.get('category'))
       
       bill_details = BillDetail(
             user = self.request.user,
@@ -129,14 +132,25 @@ class CreateBill(LoginRequiredMixin, CreateView):
             
           bill.save()
           
+      AuditLogger.log_audit(
+        user = self.request.user,
+        action_type = 'New Bill',
+        model_affected = 'Bill & BillDetail',
+        record_id = bill_details.id,
+        old_value = '',
+        new_value = self.request.POST.get('name'),
+        request = self.request,
+        action_description = 'Create New Bill'
+      )
+          
     return super().form_valid(form)
    
 
 class CreateCategory(LoginRequiredMixin, CreateView):
-  model = BillCategory
+  model = Category
   template_name = 'new_category.html'
   context_object_name = 'category'
-  fields = ['name']
+  fields = ['name', 'category_type']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   success_url = reverse_lazy('create-bill')
@@ -146,7 +160,44 @@ class CreateCategory(LoginRequiredMixin, CreateView):
 
       return context
     
+  def get(self, request, *args, **kwargs):
+    previous_url = request.META.get('HTTP_REFERER')
+    
+    if previous_url:
+      request.session['previous_url'] = previous_url
+        
+    return super().get(request, *args, **kwargs)
+    
   def form_valid(self, form):
+    user = self.request.user
+    name = form.cleaned_data.get('name')
+    category_type = form.cleaned_data.get('category_type')
+    previous_url = self.request.session.get('previous_url', reverse('bills-tracker') )
+    
+    check_duplicate = self.model.objects.filter(user=user, name=name, category_type=category_type).exists()
+    
+    if check_duplicate:
+      form.add_error('name', f"The category '{name}' already exists!")
+      
+      return self.form_invalid(form)
+    
+    else:
+      with transaction.atomic():
+        form.instance.user = user
+        form.save()
+      
+        AuditLogger.log_audit(
+            user = user,
+            action_type = 'New Category',
+            model_affected = 'Category',
+            record_id = form.instance.id,
+            old_value = '',
+            new_value = name,
+            request = self.request,
+            action_description = 'Create New Category'
+          )
+        
+        return HttpResponseRedirect(self.request.session.get('previous_url', reverse('bills-tracker')))
 
     return super().form_valid(form)
   
@@ -163,7 +214,6 @@ class BillDetailView(LoginRequiredMixin, DetailView):
     context = super().get_context_data(**kwargs)
     bill = Bill.objects.filter(bill_detail=self.kwargs['pk'])
     context['bills'] = bill
-    
     context['bill_total_amount'] = Bill.objects.filter(bill_detail = self.kwargs['pk']).aggregate(total=Sum('amount'))['total']
     
     payment_total = Bill.objects.filter(bill_detail = self.kwargs['pk'], payment_status=PaymentStatus.objects.get(name='Paid')).aggregate(total=Sum('amount'))['total'] or 0
@@ -197,7 +247,7 @@ class BillView(LoginRequiredMixin, DetailView):
       class PaymentForm(forms.ModelForm):
         class Meta:
           model = Payment
-          fields = ['payment_reference', 'payment_type', 'amount', 'fee_amount']
+          fields = ['payment_reference', 'amount', 'fee_amount']
       
       return context
   
@@ -229,6 +279,22 @@ class DeleteBill(LoginRequiredMixin, DeleteView):
     
     return obj
   
+  def post(self, request, *args, **kwargs):
+    obj = self.get_object()
+
+    AuditLogger.log_audit(
+      user = self.request.user,
+      action_type = 'Delete Bill',
+      model_affected = 'Bill',
+      record_id = obj.id,
+      old_value = '',
+      new_value = '',
+      request = self.request,
+      action_description = 'Delete Bill'
+      )
+    
+    return super().delete(request, *args, **kwargs)
+  
 
 class DeleteBillDetail(LoginRequiredMixin, DeleteView):
   model = BillDetail
@@ -246,6 +312,22 @@ class DeleteBillDetail(LoginRequiredMixin, DeleteView):
     
     return obj
   
+  def post(self, request, *args, **kwargs):
+    obj = self.get_object()
+
+    AuditLogger.log_audit(
+      user = self.request.user,
+      action_type = 'Delete BillDetail',
+      model_affected = 'BillDetail',
+      record_id = obj.id,
+      old_value = '',
+      new_value = '',
+      request = self.request,
+      action_description = 'Delete Bill Detail'
+      )
+    
+    return super().delete(request, *args, **kwargs)
+  
 
 class UpdateBill(LoginRequiredMixin, UpdateView):
   model = Bill
@@ -259,15 +341,20 @@ class UpdateBill(LoginRequiredMixin, UpdateView):
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
     bill = self.get_object()
+    user = self.request.user
+    category_type = 'Expense'
     
     context['details'] = bill.bill_detail
-    context['category'] = BillCategory.objects.all()
+    context['category'] = Category.objects.filter(user=user, category_type=category_type)
     
     return context
   
   def form_valid(self, form):
     with transaction.atomic():
-      category_instance = BillCategory.objects.get(id=self.request.POST.get('category'))
+      bill = self.get_object()
+      old_values = {field: getattr(bill, field) for field in form.changed_data}
+      # Need to also log the BillDetails
+      category_instance = Category.objects.get(id=self.request.POST.get('category'))
       bill_form = form.instance
       bill_detail = self.object.bill_detail
       
@@ -281,6 +368,19 @@ class UpdateBill(LoginRequiredMixin, UpdateView):
       bill_form.amount_payable = bill_form.amount - total_paid
       bill_form.save()
       
+      new_values = {field: getattr(self.object, field) for field in form.changed_data}
+      
+      AuditLogger.log_audit(
+        user = self.request.user,
+        action_type = 'Update Bill',
+        model_affected = 'Bill',
+        record_id = bill.id,
+        old_value = old_values,
+        new_value = new_values,
+        request = self.request,
+        action_description = 'Update Bill'
+      )
+      
       return redirect('bill-view', pk=self.kwargs['pk'])
         
     return super().form_valid(form)
@@ -290,7 +390,7 @@ class PayBill(LoginRequiredMixin, CreateView):
   model = Payment
   context_object_name = 'payment'
   template_name = 'paybill.html'
-  fields = ['payment_reference', 'payment_type', 'amount', 'fee_amount']
+  fields = ['payment_reference', 'account', 'amount', 'fee_amount', 'payment_date_time', 'note']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
@@ -301,34 +401,70 @@ class PayBill(LoginRequiredMixin, CreateView):
     
     context['details'] = get_object_or_404(BillDetail, id=detail_id)
     context['bill'] = get_object_or_404(Bill, id=bill_id)
+    context['datetime_now'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
     
     return context
   
+  def form_invalid(self, form):
+    response = super().form_invalid(form)
+    
+    return response
+  
+  
   def form_valid(self, form):
-      with transaction.atomic():
-        bill_id = self.kwargs['b_id']
-        
-        bill = Bill.objects.select_for_update().get(id=bill_id)
-        
-        payment = form.save(commit=False)
-        payment.bill = bill
-        payment.save()
-        
-        response = super().form_valid(form)
-        
-        total_paid = sum(pay.amount for pay in bill.pays.all())
-        bill.amount_payable = bill.amount - total_paid
-        
-        if bill.amount_payable <= 0:
-          bill.payment_status = PaymentStatus.objects.get(name='Paid')
-        else:
-          bill.payment_status = PaymentStatus.objects.get(name='Partially Paid')
-        
-        bill.save()
-        
-        return redirect('bill-view', pk=bill_id)
+    with transaction.atomic():
+      bill_id = self.kwargs['b_id']
+      account_id = form.cleaned_data.get('account')
+      amount = form.cleaned_data.get('amount')
+      fee_amount = form.cleaned_data.get('fee_amount')
+      category_name = self.request.POST.get('category')
       
-      return response
+      form.instance.category = Category.objects.get(user=self.request.user, name=category_name, category_type='Expense')
+      
+      total_amount = amount + fee_amount
+      
+      #Payment
+      bill = Bill.objects.select_for_update().get(id=bill_id)
+      money_account = MoneyAccount.objects.select_for_update().get(id=account_id.id)
+      
+      payment = form.save(commit=False)
+      payment.user = self.request.user
+      payment.transaction_type = 'Bill Payment'
+      payment.bill = bill
+      payment.amount = -abs(amount)
+      payment.fee_amount = -abs(fee_amount)
+      payment.save()
+      
+      response = super().form_valid(form)
+      
+      #Update Money Account
+      money_account.amount -= total_amount
+      money_account.save()
+      
+      total_paid = sum(-pay.amount for pay in bill.pays.all())
+      bill.amount_payable = bill.amount - total_paid
+      
+      if bill.amount_payable <= 0:
+        bill.payment_status = PaymentStatus.objects.get(name='Paid')
+      else:
+        bill.payment_status = PaymentStatus.objects.get(name='Partially Paid')
+      
+      bill.save()
+      
+      # TransactionHistoryLogger.log_transaction(
+      #   bill_id = bill.id,
+      #   payment_reference = form.cleaned_data.get('payment_reference'),
+      #   account_id = money_account.id,
+      #   transaction_type = 'Bill Payment',
+      #   amount = amount,
+      #   fee_amount = fee_amount,
+      #   note = form.cleaned_data.get('note'),
+      #   payment_date_time = form.cleaned_data.get('')
+      # )
+      
+      return redirect('bill-view', pk=bill_id)
+      
+    return response
   
   def get_success_url(self):
     return reverse_lazy('bills-tracker')
@@ -448,8 +584,10 @@ class AccountView(LoginRequiredMixin, ListView):
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
       
-      context['money_account'] = self.model.objects.filter(user=self.request.user)
-      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
+      user = self.request.user
+      
+      context['money_account'] = self.model.objects.filter(user=user)
+      context['account_group'] = AccountGroup.objects.filter(user=user)
 
       return context
   
@@ -471,8 +609,10 @@ class MoneyAccountList(LoginRequiredMixin, ListView):
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
       
-      account_groups = AccountGroup.objects.filter(user=self.request.user)
-      money_accounts = self.model.objects.filter(user=self.request.user)
+      user = self.request.user
+      
+      account_groups = AccountGroup.objects.filter(user=user)
+      money_accounts = self.model.objects.filter(user=user)
       
       account_group_total = account_groups.model.objects.annotate(total_amount=Sum('moneyaccount__amount'))
       
@@ -502,25 +642,36 @@ class MoneyAccountAdd(LoginRequiredMixin, CreateView):
       return context
   
   def form_valid(self, form):
-    form.instance.user = self.request.user
+    user = self.request.user
+    name = form.cleaned_data.get('name')
+    account_group = form.cleaned_data.get('account_group')
     
-    with transaction.atomic():
-      form_amount = self.request.POST.get('amount')
+    check_duplicate = self.model.objects.filter(user=user, name=name, account_group=account_group).exists()
+    
+    if check_duplicate:
+      form.add_error('name', f"Account '{name}' already exists under {account_group}")
       
-      response = super().form_valid(form)
-      account_id = self.object
-      
-      TransactionHistoryLogger.log_transaction(
-        user_id = self.request.user,
-        bill_id = None,
-        payment_reference = None,
-        account_id = account_id,
-        transaction_type = 'New Money Account',
-        amount = form_amount,
-        fee_amount = 0,
-        note = None,
-        payment_date_time = datetime.now()
-      )
+      return self.form_invalid(form)
+    
+    else:
+      with transaction.atomic():
+        form.instance.user = user
+        form_amount = self.request.POST.get('amount')
+        
+        response = super().form_valid(form)
+        account_id = self.object
+        
+        TransactionHistoryLogger.log_transaction(
+          user_id = user,
+          bill_id = None,
+          payment_reference = None,
+          account_id = account_id,
+          transaction_type = 'New Money Account',
+          amount = form_amount,
+          fee_amount = 0,
+          note = None,
+          payment_date_time = datetime.now()
+        )
       
     return response
     
@@ -652,6 +803,101 @@ class MoneyTransfer(LoginRequiredMixin, CreateView):
           receiver_payment.save()
       
       return super().form_valid(form)
+    
+
+class MoneyIncome(LoginRequiredMixin, CreateView):
+  model = Payment
+  context_object_name = 'payment'
+  fields = ['account',
+            'amount',
+            'note',
+            'category',
+            'payment_date_time']
+  template_name = 'money_income.html'
+  login_url = ' login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-accounts')
+  
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    
+    user = self.request.user
+    category_type = 'Income'
+    
+    context['datetime_now'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+    context['money_account_list'] = MoneyAccount.objects.filter(user=user)
+    context['category_list'] = Category.objects.filter(user=user, category_type=category_type)
+
+    return context
+    
+  def form_valid(self, form):
+    account = form.cleaned_data.get('account')
+    amount = form.cleaned_data.get('amount')
+    
+    with transaction.atomic():
+      form.instance.user = self.request.user
+      form.instance.fee_amount = 0
+      form.instance.transaction_type = 'Income'
+      form.instance.account = account
+      
+      money_account = MoneyAccount.objects.select_for_update().get(id=account.id)
+      money_account.amount += amount
+      money_account.save()
+    
+    return super().form_valid(form)
+  
+
+class MoneyExpense(LoginRequiredMixin, CreateView):
+  model = Payment
+  context_object_name = 'payment'
+  fields = ['account',
+            'amount',
+            'fee_amount',
+            'note',
+            'category',
+            'payment_date_time']
+  template_name = 'money_expense.html'
+  login_url = ' login'
+  redirect_field_name = 'redirect_to'
+  success_url = reverse_lazy('money-accounts')
+  
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    
+    user = self.request.user
+    category_type = 'Expense'
+    
+    context['datetime_now'] = datetime.now().strftime('%Y-%m-%dT%H:%M')
+    context['money_account_list'] = MoneyAccount.objects.filter(user=user)
+    context['category_list'] = Category.objects.filter(user=user, category_type=category_type)
+
+    return context
+    
+  def form_valid(self, form):
+    user = self.request.user
+    account = form.cleaned_data.get('account')
+    amount = form.cleaned_data.get('amount')
+    fee_amount = form.cleaned_data.get('fee_amount')
+    total_amount = amount + fee_amount
+    
+    with transaction.atomic():
+      money_account = MoneyAccount.objects.select_for_update().get(id=account.id)
+      money_account.amount -= total_amount
+      money_account.save()
+      
+      form.instance.user = user
+      form.instance.transaction_type = 'Expense'
+      form.instance.amount = -abs(amount)
+      form.instance.fee_amount = -abs(fee_amount)
+      form.save()
+    
+    return super().form_valid(form)
+  
+  def form_invalid(self, form):
+    response = super().form_invalid(form)
+    
+    return response
+  
 
 
 class TransactionHistory(LoginRequiredMixin, ListView):
@@ -788,7 +1034,17 @@ class TransactionHistoryLogger:
 
 class AuditLogger:
   @staticmethod
-  def log_audit(user, action_type, model_affected, record_id, old_value, new_value, ip_address, user_agent, action_description, action_success, url, referer_url):
+  def get_client_ip(request):
+      """ Extract the real client IP address from the request. """
+      x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+      if x_forwarded_for:
+          ip = x_forwarded_for.split(',')[0]  # Get the first IP in the list
+      else:
+          ip = request.META.get('REMOTE_ADDR')  # Default to direct IP
+      return ip
+      
+  @staticmethod
+  def log_audit(user, action_type, model_affected, record_id, old_value, new_value, request, action_description):
     AuditLog.objects.create(
       user = user,
       action_type = action_type,
@@ -796,10 +1052,10 @@ class AuditLogger:
       record_id = record_id,
       old_value = old_value,
       new_value = new_value,
-      ip_address = ip_address,
-      user_agent = user_agent,
+      ip_address = AuditLogger.get_client_ip(request),
+      user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown'),
       action_description = action_description,
-      action_success = action_success,
-      url = url,
-      referer_url = referer_url
+      action_success = True,
+      url = request.build_absolute_uri(),
+      referer_url = request.META.get('HTTP_REFERER', 'No Referrer')
     )

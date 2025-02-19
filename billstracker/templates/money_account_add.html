@@ -21,13 +21,18 @@
       <div class="row">
         <div class="col-sm-12 col-md-6 mb-2">
           <label for="id_name" class="form-label">Name</label>
-          <input type="text" name="name" id="id_name" class="form-control" required>
+          <input type="text" name="name" id="id_name" class="form-control{% if form.name.errors %} is-invalid{% endif %}" required>
+          {% if form.name.errors %}
+            <div class="invalid-feedback">
+              {{ form.name.errors|striptags }}
+            </div>
+          {% endif %}
         </div>
         <div class="col-sm-12 col-md-6 mb-2">
           <label for="id_amount" class="form-label">Amount</label>
           <div class="input-group">
             <span class="input-group-text">&#8369;</span>
-            <input type="number" step="Any" name="amount" id="id_amount" class="form-control" required>
+            <input type="number" step="Any" name="amount" id="id_amount" class="form-control" value="0" required>
           </div>
         </div>
       </div>

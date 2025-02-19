@@ -10,7 +10,6 @@
       <thead>
         <th scope="col">Date Time</th>
         <th scope="col">Type</th>
-        <th scope="col">Bill</th>
         <th scope="col">Account</th>
         <th scope="col">Amount</th>
         <th scope="col">Fee</th>
@@ -21,7 +20,6 @@
           <tr>
             <td>{{ payment.payment_date_time }}</td>
             <td>{{ payment.transaction_type }}</td>
-            <td>{{ payment.bill.bill_detail.name }}</td>
             <td>{{ payment.account.name }}</td>
             <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.amount }}</td>
             <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.fee_amount }}</td>

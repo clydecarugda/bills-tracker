@@ -4,13 +4,7 @@
 
 {% block content %}
 
-<div class="row mb-3">
-  <div class="col">
-    <a href="{{ request.META.HTTP_REFERER  }}" class="btn btn-secondary">Back</a>
-  </div>
-</div>
-
-<div class="row d-flex justify-content-center align-items-center">
+<div class="row d-flex justify-content-center align-items-center mt-3">
   <div class="col-sm-12 col-md-6 mb-2">
     <div class="card border-secondary">
       <div class="card-header">
@@ -22,7 +16,13 @@
           <div class="row">
             <div class="col-sm-12 col-md-12 mb-2">
               <label for="id_name" class="form-label">Category Name</label>
-              <input type="text" class="form-control" name="name" id="id_name" required>
+              <input type="text" class="form-control{% if form.name.errors %} is-invalid{% endif %}" name="name" id="id_name" required>
+              {% if form.name.errors %}
+                <div class="invalid-feedback">
+                  {{ form.name.errors|striptags }}
+                </div>
+              {% endif %}
+              <input type="hidden" name="category_type" id="id_category_type" value="Expense">
             </div>
           </div>
           <div class="row">

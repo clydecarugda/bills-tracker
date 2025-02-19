@@ -7,7 +7,7 @@
       <h2>Bills List</h2>
   </div> -->
 
-  <div class="row mb-2 text-end">
+  <div class="row mb-2 mt-3 text-end">
     <div>
       <button id="tableViewBtn" class="btn btn-outline-primary"><i class="bi bi-table"></i></button>
       <button id="gridViewBtn" class="btn btn-outline-secondary"><i class="bi bi-grid"></i></button>
@@ -16,7 +16,7 @@
 
   <div class="row mb-1">
     <div class="col-sm-12 col-md-5 mb-2">
-      <a href="{% url 'create-bill' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i>Add Bill {{ selected_month }}</a>
+      <a href="{% url 'create-bill' %}" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add Bill</a>
     </div>
 
     <div class="col-sm-11 col-md-2 mb-2">
@@ -79,17 +79,17 @@
       <tbody class="table-group-divider" id="billTableBody">
 
         {% for bill in bills %}
-        <tr data-month="{{ bill.due_date.month }}" data-year="{{ bill.due_date.year }}">
-          <td>{{ bill.bill_detail.name }}</td>
-          <td>{{ bill.bill_detail.category.name }}</td>
-          <td>{{ bill.due_date }}</td>
-          <td>&#8369; {{ bill.amount_payable }}</td>
-          <td class="text-center text-nowrap w-auto">
-            <a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-info-circle"></i></a>
-            <a href="{% url 'bill-update' bill.id %}" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-pencil-square"></i></a>
-            <a href="{% url 'pay-bill' bill.id bill.bill_detail.id %}" class="btn btn-outline-warning btn-sm me-1 {% if bill.amount_payable <= 0 %} disabled {% endif %}"><i class="bi bi-wallet2"></i></a>
-          </td>
-        </tr>
+          <tr data-month="{{ bill.due_date.month }}" data-year="{{ bill.due_date.year }}">
+            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.bill_detail.name }}</td>
+            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.bill_detail.category.name }}</td>
+            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.due_date }}</td>
+            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>&#8369; {{ bill.amount_payable }}</td>
+            <td class="text-center text-nowrap w-auto">
+              <a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-info-circle"></i></a>
+              <a href="{% url 'bill-update' bill.id %}" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-pencil-square"></i></a>
+              <a href="{% url 'pay-bill' bill.id bill.bill_detail.id %}" class="btn btn-outline-warning btn-sm me-1 {% if bill.amount_payable <= 0 %} disabled {% endif %}"><i class="bi bi-wallet2"></i></a>
+            </td>
+          </tr>
         {% endfor %}
 
       </tbody>
