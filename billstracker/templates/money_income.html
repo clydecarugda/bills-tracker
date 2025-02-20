@@ -1,0 +1,75 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<div class="row">
+  {% include 'money_sidebar.html' %}
+
+    <div class="col-sm-12 col-md-9 flex-grow-1 p-3">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-sm-12 col-md-6 mb-2">
+            <label for="id_payment_date_time" class="form-label">Date & Time</label>
+            <input type="datetime-local" class="form-control" name="payment_date_time" id="id_payment_date_time" value="{{ datetime_now }}">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12 col-md-6 mb-2">
+            <label for="id_account" class="form-label">Account</label>
+            <select class="form-select{% if form.non_field_errors %} is-invalid{% endif %}" id="id_account" name="account" aria-label="Sender account select" required>
+              <option value="" selected disabled>---Select Account---</option>
+              {% for money_account in money_account_list %}
+
+                <option value="{{ money_account.id }}">{{ money_account.name }}</option>
+
+              {% empty %}
+
+                <option disabled selected>No available accounts</option>
+
+              {% endfor %}
+            </select>
+            {% if form.non_field_errors %}
+              <div class="invalid-feedback">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+          </div>
+          <div class="col-sm-12 col-md-6 mb-2">
+            <label for="id_category" class="form-label">Category</label>
+            <select class="form-select" name="category" id="id_category">
+              <option selected>---Select Category---</option>
+              {% for category in category_list %}
+              
+                <option value="{{ category.id }}">{{ category.name }}</option>
+
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12 col-md-6 mb-2">
+            <label for="id_amount" class="form-label">Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">&#8369;</span>
+              <input type="number" step="Any" min="1" max="9999999" class="form-control" name="amount" id="id_amount" value="0" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-12 col-md-12 mb-2">
+            <label for="id_note" class="form-label">Notes</label>
+            <textarea class="form-control" id="id_note" name="note" rows="3"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-warning float-end"><i class="bi bi-wallet2"></i> Save</button>
+
+      </form>
+    </div>
+</div>
+  
+{% endblock content %}

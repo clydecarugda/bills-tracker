@@ -4,42 +4,46 @@
 
 {% block content %}
 
-<div class="row mb-3">
-  <div class="col">
-    <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Back</a>
-  </div>
-</div>
-
-<div class="card">
+<div class="card m-3">
   <div class="card-header">
     <h4 class="mb-0 text-center">Pay Bill</h4>
   </div>
   <div class="card-body">
     <div class="row p-2">
-      <div class="col-7">
+      <div class="col-sm-12 col-md-7 mb-2">
         <form method="post">
           {% csrf_token %}
           <div class="row mb-2">
-            <div class="col">
-              <label for="id_payment_type" class="form-label">Payment Method</label>
-              {{ form.payment_type|add_attrs:"class=form-control" }}
+            <div class="col-sm-12 col-md-6 mb-2">
+              <label for="id_payment_date_time" class="form-label">Date & Time</label>
+              <input type="datetime-local" name="payment_date_time" class="form-control" value="{{ datetime_now }}" required>
             </div>
           </div>
           <div class="row mb-2">
-            <div class="col">
+            <div class="col-sm-12 col-md-6 mb-2">
+              <label for="id_account" class="form-label">Account</label>
+              {{ form.account|add_attrs:"class=form-control" }}
+            </div>
+            <div class="col-sm-12 col-md-6 mb-2">
+              <label for="id_category" class="form-label">Category</label>
+              <input type="text" class="form-control" name="category" id="id_category" value="{{ details.category }}" readonly>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mb-2">
               <label for="id_payment_reference" class="form-label">Reference #</label>
               {{ form.payment_reference|add_attrs:"class=form-control" }}
             </div>
           </div>
-          <div class="row mb-2">
-            <div class="col-7">
+          <div class="row">
+            <div class="col-sm-12 col-md-8 mb-2">
               <label for="id_amount" class="form-label">Amount to pay</label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
                 {{ form.amount|add_attrs:"class=form-control" }}
               </div>
             </div>
-            <div class="col-5">
+            <div class="col-sm-12 col-md-4 mb-2">
               <label for="id_fee_amount" class="form-label">Fee (If any)</label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
@@ -47,22 +51,30 @@
               </div>
             </div>
           </div>
+          <div class="row mb-2">
+            <div class="col-sm-12 col-md-12 mb-2">
+              <label for="id_note" class="form-label">Notes</label>
+              {{ form.note|add_attrs:"class=form-control" }}
+            </div>
+          </div>
           <div class="row mt-4">
-            <div class="col-9">
+            <div class="col-sm-12 col-md-12 mb-2 text-center">
               <label for="id_total_amount" class="form-label"><strong>Total Amount:</strong></label>
               <div class="input-group">
                 <span class="input-group-text">&#8369;</span>
-                <input type="number" class="form-control" id="id_total_amount" readonly disabled>
+                <input type="number" class="form-control text-center" id="id_total_amount" readonly disabled>
               </div>
             </div>
-          <div class="row mt-4">
-            <input type="submit" class="btn btn-success" value="Pay">
           </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mt-2 text-center">
+              <button type="submit" class="btn btn-success"><i class="bi bi-wallet"></i> Pay</button>
+            </div>
           </div>
         </form>
       </div>
 
-      <div class="col-5 d-flex align-items-stretch">
+      <div class="col-sm-12 col-md-5 mt-2 d-flex align-items-stretch">
         <div class="card border-success">
           <div class="card-body">
             <div class="row">
@@ -77,6 +89,18 @@
         </div>
       </div>
     </div>
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <ul>
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <li>{{ field|title }}: {{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
 
   </div>
 </div>

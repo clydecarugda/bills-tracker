@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<div class="row">
+  {% include 'money_sidebar.html' %}
+
+    <div class="col-sm-12 col-md-9 flex-grow-1 p-3">
+      <!-- <h4>Money Accounts</h4> -->
+      <a href="{% url 'money-accounts-add' %}" class="btn btn-info btn-sm mb-3"><i class="bi bi-plus"></i> Add</a>
+      <a href="{% url 'money-accounts-transfer' %}" class="btn btn-outline-warning btn-sm float-end"><i class="bi bi-arrow-left-right"></i> Transfer</a>
+      <a href="{% url 'money-accounts-income' %}" class="btn btn-outline-primary btn-sm float-end me-1"><i class="bi bi-wallet2"></i> Income</a>
+      <a href="{% url 'money-accounts-expense' %}" class="btn btn-outline-danger btn-sm float-end me-1"><i class="bi bi-cash-stack"></i> Expense</a>
+
+      {% for group in account_groups %}
+
+      <table class="table table-hover table-responsive caption-top">
+        <thead>
+          <tr>
+            <th>{{ group.name }}</th>
+            <th class="text-end{% if account.amount < 0 %} text-danger{% else %} text-success{% endif %}">&#8369; {{ group.total_amount|default:0 }}</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for account in group.accounts %}
+
+            <tr>
+              <td class="w-50{% if account.amount < 0 %} text-danger{% endif %}"><a href="{% url 'money-accounts-view' account.id %}" class="link-body-emphasis text-decoration-none">{{ account.name }}</a></td>
+              <td class="w-50 text-end{% if account.amount < 0 %} text-danger{% endif %}">&#8369; {{ account.amount }}</td>
+            </tr>
+          
+          {% empty %}
+            <tr>
+              <td colspan="2" class="text-center">No accounts in this group</td>
+            </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% endfor %}
+    </div>
+
+</div>
+  
+{% endblock content %}

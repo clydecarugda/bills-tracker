@@ -3,81 +3,69 @@
 {% load custom_tags %}
 
 {% block content %}
-  
-<div class="row mb-3">
-  <div class="col">
-    <a href="{% url 'bill-view' bill.id %}" class="btn btn-secondary">Back</a>
-  </div>
-</div>
 
-<div class="card border-dark">
+<div class="card border-secondary mt-5">
   <div class="card-header">
     <h4 class="mb-0 text-center">Bill Details</h4>
   </div>
   <div class="card-body">
-
-    {% if form.errors %}
-      <div class="alert alert-danger">
-          <ul>
-              {% for field, errors in form.errors.items %}
-                  <li>{{ field }}: {{ errors|join:", " }}</li>
-              {% endfor %}
-          </ul>
-      </div>
-    {% endif %}
-    
     <form method="post">
       {% csrf_token %}
       <div class="row mb-3">
-        <div class="col">
+        <div class="col-sm-12 col-md-6 mb-2">
           <label for="id_name" class="form-label">Bill Name</label>
           <input type="text" name="name" id="id_name" class="form-control" value="{{ details.name }}">
         </div>
-        <div class="col">
+        <div class="col-sm-12 col-md-6 mb-2">
           <label for="id_category" class="form-label">Category</label>
-          <select id="id_category" name="category" class="form-control">
-            {% for cat in category %}
-              <option value="{{ cat.id }}" {% if cat.id == details.category.id %}selected{% endif %}>
-                {{ cat.name }}
-              </option>
-            {% endfor %}
-          </select>
+          <div class="input-group">
+            <select id="id_category" name="category" class="form-control">
+              {% for cat in category %}
+                <option value="{{ cat.id }}" {% if cat.id == details.category.id %}selected{% endif %}>
+                  {{ cat.name }}
+                </option>
+              {% endfor %}
+            </select>
+            <a href="{% url 'create-category' %}" class="btn btn-outline-secondary">New</a>
+          </div>
         </div>
       </div>
 
       <div class="row mb-3">
-        <div class="col">
+        <div class="col-sm-12 col-md-12 mb-2">
           <label for="id_description" class="form-label">Description</label>
           <textarea name="description" id="id_description" rows="3" class="form-control">{{ details.description }}</textarea>
         </div>
       </div>
 
       <div class="row mb-4">
-        <div class="col">
+        <div class="col-sm-12 col-md-4 mb-2">
           <label for="id_is_recurring" class="form-label">Payment Schedule</label>
           <input type="text" class="form-control" id="id_is_recurring" name="is_recurring" value="{{ details.is_recurring }}" readonly disabled>
         </div>
-        <div class="col">
+        <div class="col-sm-12 col-md-4 mb-2">
           <label for="id_due_date" class="form-label">Due Date</label>
           <input type="date" class="form-control" name="due_date" id="id_due_date" value="{{ form.due_date.value|date:'Y-m-d' }}">
         </div>
-        <div class="col">
+        <div class="col-sm-12 col-md-4 mb-2">
           <label for="id_amount" class="form-label">Amount</label>
           <div class="input-group">
             <span class="input-group-text">&#8369;</span>
-            <input type="number" class="form-control" name="amount" id="id_amount" value="{{ form.amount.value }}" >
+            <input type="number" step="any" class="form-control" name="amount" id="id_amount" value="{{ form.amount.value }}" >
           </div>
         </div>
       </div>
 
       <div class="row text-end">
-        <div class="col">
-          <input type="submit" class="btn btn-success" value="Update">
+        <div class="col d-grid gap-2 d-md-flex justify-content-md-end">
+          <button type="submit" class="btn btn-success"><i class="bi bi-floppy"></i> Save</button>
         </div>
       </div>
       
     </form>
   
+  </div>
+
 </div>
 
 <script>

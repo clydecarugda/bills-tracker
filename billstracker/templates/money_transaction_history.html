@@ -1,0 +1,39 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<div class="row">
+  {% include 'money_sidebar.html' %}
+
+  <div class="col-sm-12 col-md-9 flex-grow-1 p-3">
+    <table class="table table-sm table-hover">
+      <thead>
+        <th scope="col">Date Time</th>
+        <th scope="col">Type</th>
+        <th scope="col">Account</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Fee</th>
+      </thead>
+      <tbody class="table-group-divider">
+        {% for payment in payments %}
+
+          <tr>
+            <td>{{ payment.payment_date_time }}</td>
+            <td>{{ payment.transaction_type }}</td>
+            <td>{{ payment.account.name }}</td>
+            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.amount }}</td>
+            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.fee_amount }}</td>
+          </tr>
+
+        {% empty %}
+
+          <h4>No data</h4>
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+  
+{% endblock content %}

@@ -1,0 +1,41 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row d-flex justify-content-center align-items-center mt-3">
+  <div class="col-sm-12 col-md-6 mb-2">
+    <div class="card border-secondary">
+      <div class="card-header">
+        <h4 class="mb-0 text-center">New Category</h4>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mb-2">
+              <label for="id_name" class="form-label">Category Name</label>
+              <input type="text" class="form-control{% if form.name.errors %} is-invalid{% endif %}" name="name" id="id_name" required>
+              {% if form.name.errors %}
+                <div class="invalid-feedback">
+                  {{ form.name.errors|striptags }}
+                </div>
+              {% endif %}
+              <input type="hidden" name="category_type" id="id_category_type" value="Expense">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 col-md-12 mb-2 text-center">
+              <button type="submit" class="btn btn-success">Save <i class="bi bi-floppy"></i></button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+{% endblock content %}
+  

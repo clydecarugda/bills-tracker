@@ -1,11 +1,84 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
+def user_directory_path(instance, filename):
+  return f"profile_pics/{instance.user.id}/{filename}"
+
+
+# Money Tracker
+class AccountGroup(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  name = models.CharField(max_length=30)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def __str__(self):
+    return self.name
+  
+  class Meta:
+    ordering = ['name']
+    
+  def get_absolute_url(self):
+    return reverse('money-account-group-view', kwargs={'pk': self.pk}) 
+  
+  
+class Category(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  name = models.CharField(max_length=30)
+  category_type = models.CharField(max_length=15)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  class Meta:
+    verbose_name_plural = 'Categories'
+  
+  def __str__(self):
+    return self.name
+  
+
+class MoneyAccount(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  account_group = models.ForeignKey(AccountGroup, on_delete=models.CASCADE)
+  name = models.CharField(max_length=30)
+  amount = models.FloatField(default=0)
+  description = models.TextField(null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return self.name
+  
+  def get_absolute_url(self):
+    return reverse('money-accounts-view', kwargs={'pk': self.pk}) 
+  
+  
+class AuditLog(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  action_type = models.CharField(max_length=30)
+  model_affected = models.CharField(max_length=100)
+  record_id = models.UUIDField()
+  old_value = models.TextField()
+  new_value = models.TextField()
+  ip_address = models.GenericIPAddressField(null=True, blank=True)
+  user_agent = models.CharField(max_length=255)
+  action_description = models.TextField()
+  action_success = models.BooleanField()
+  url = models.CharField(max_length=200)
+  referer_url = models.CharField(max_length=200)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return self.action_type
+  
+
+# Bills
 class PaymentStatus(models.Model):
   name = models.CharField(max_length=30)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -15,9 +88,10 @@ class PaymentStatus(models.Model):
     
 
 class BillCategory(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
   name = models.CharField(max_length=30)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -29,7 +103,7 @@ class BillCategory(models.Model):
 class BillDetail(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
-  category = models.ForeignKey(BillCategory, on_delete=models.CASCADE)
+  category = models.ForeignKey(Category, on_delete=models.CASCADE)
   description = models.TextField(null=True, blank=True)
   is_recurring = models.CharField(max_length=15,
                                   choices=[('one-time', 'One-Time'),
@@ -38,7 +112,7 @@ class BillDetail(models.Model):
                                            ('yearly', 'Yearly')],
                                   default='one-time')
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.name
@@ -52,44 +126,40 @@ class Bill(models.Model):
   amount_payable = models.FloatField()
   payment_status = models.ForeignKey(PaymentStatus, default=1, on_delete=models.CASCADE)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
   def __str__(self):
     return self.bill_detail.name
   
   class Meta:
-    ordering = ['payment_status', 'due_date']
-    
-
-class PaymentType(models.Model):
-  name = models.CharField(max_length=25)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+    ordering = ['due_date']
   
-  def __str__(self):
-    return self.name
 
 class Payment(models.Model):
-  bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='pays')
+  user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+  bill = models.ForeignKey(Bill, on_delete=models.SET_NULL, related_name='pays', null=True)
+  account = models.ForeignKey(MoneyAccount, on_delete=models.SET_NULL, null=True)
   payment_reference = models.CharField(max_length=100, null=True, blank=True)
-  payment_type = models.ForeignKey(PaymentType, on_delete=models.CASCADE)
+  transaction_type = models.CharField(max_length=25, null=True)
+  category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
   amount = models.FloatField()
   fee_amount = models.FloatField(default=0)
+  note = models.TextField(null=True, blank=True)
+  payment_date_time = models.DateTimeField(null=True)
   created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
   
-  def __str__(self):
-    return self.bill.bill_detail.name
-  
-
-class USettings(models.Model):
-  user = models.ForeignKey(User, on_delete=models.CASCADE)
-  auto_recurring = models.BooleanField(default=True)
-  created_at = models.DateTimeField(auto_now_add=True)
-  updated_at = models.DateTimeField(auto_now_add=True)
-  
-  def __str__(self):
-    return self.auto_recurring
+  def __int__(self):
+    return self.id
   
   class Meta:
-    verbose_name_plural = 'USettings'
+    ordering = ['-payment_date_time']
+    
+    
+class UserProfile(models.Model):
+  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  profile_picture = models.ImageField(upload_to=user_directory_path, blank=True, null=True)
+  dark_mode = models.BooleanField(default=False)
+  
+  def __str__(self):
+        return self.user.username

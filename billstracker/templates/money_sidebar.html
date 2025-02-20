@@ -1,0 +1,63 @@
+<!-- Sidebar for md and larger screens -->
+<div class="col-sm-3 col-md-3 d-none d-md-block bg-body-tertiary vh-100">
+  <h4 class="mb-4 text-center">Money Tracker</h4>
+  <ul class="nav nav-pills nav-fill flex-column">
+    <!-- <li class="nav-item">
+      <a class="nav-link {% if '/money-tracker/dashboard' in request.path %}active{% endif %}" href="{% url 'money-dashboard' %}">
+        <i class="bi bi-house-door"></i> Dashboard
+      </a>
+    </li> -->
+    <li class="nav-item">
+      <a class="nav-link {% if '/money-tracker/accounts' in request.path %}active{% endif %}" href="{% url 'money-accounts' %}">
+        <i class="bi bi-wallet2"></i> Money Accounts
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if '/money-tracker/account-groups' in request.path %}active{% endif %}" href="{% url 'money-account-groups' %}">
+        <i class="bi bi-collection"></i> Account Groups
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if '/money-tracker/transaction-history'  in request.path%}active{% endif %}" href="{% url 'money-transaction-history' %}">
+        <i class="bi bi-list-check"></i> Transaction History
+      </a>
+    </li>
+  </ul>
+</div>
+
+<!-- Offcanvas Toggle Button for Small Screens -->
+<button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
+  <i class="bi bi-list"></i> Menu
+</button>
+
+<!-- Offcanvas Sidebar for Small Screens -->
+<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="offcanvasSidebar" aria-labelledby="offcanvasSidebarLabel">
+  <div class="offcanvas-header">
+    <h5 id="offcanvasSidebarLabel">Money Tracker</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="nav nav-pills nav-fill flex-column">
+      <li class="nav-item">
+        <a class="nav-link {% if '/money-tracker/dashboard in request.path' %}active{% endif %}" href="{% url 'money-dashboard' %}">
+          <i class="bi bi-house-door"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if '/money-tracker/accounts' in request.path %}active{% endif %}" href="{% url 'money-accounts' %}">
+          <i class="bi bi-wallet2"></i> Money Accounts
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if '/money-tracker/account-groups' in request.path %}active{% endif %}" href="{% url 'money-account-groups' %}">
+          <i class="bi bi-collection"></i> Account Groups
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link {% if '/money-tracker/transaction-history'  in request.path%}active{% endif %}" href="{% url 'money-transaction-history' %}">
+          <i class="bi bi-list-check"></i> Transaction History
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

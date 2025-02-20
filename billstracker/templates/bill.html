@@ -1,24 +1,20 @@
 {% extends 'main.html' %}
 
 {% block content %}
-
-<div class="row mb-3">
-  <div class="col">
-    <a href="{% url 'bills-tracker' %}" class="btn btn-secondary">Back</a>
-  </div>
-</div>
     
-<div class="row border border-black rounded p-3">
+<div class="row mb-3 border border-black rounded p-2 m-3">
 
-  <div class="row text-center mb-0">
-    <h4>Bill Details</h4>
+  <div class="row mb-3 text-center">
+    <div class="col-sm-12 col-md-12 mb-2">
+      <h4>Bill Details</h4>
+    </div>
   </div>
       <!-- Action Buttons -->
-  <div class="row mb-0">
-    <div class="col mt-3 text-end">
-      <a href="{% url 'bill-update' bills.id %}" class="btn btn-success">Edit</a>
+  <div class="row mb-3">
+    <div class="col-sm-12 col-md-12 mb-2 text-end">
+      <a href="{% url 'bill-update' bills.id %}" class="btn btn-success"><i class="bi bi-pencil"></i> Edit</a>
       <!-- Delete Button -->
-      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Delete</button>
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><i class="bi bi-trash"></i> Delete</button>
 
       <!-- Modal Delete-->
       <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -48,44 +44,44 @@
   </div>
 
   <div class="row mb-3">
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label for="id_name" class="form-label">Bill Name</label>
       <div class="input-group">
         <input type="text" class="form-control" value="{{ details.name }}" disabled readonly>
-        <a href="{% url 'billdetail-view' bills.bill_detail.id %}" class="btn btn-outline-dark">View</a>
+        <a href="{% url 'billdetail-view' bills.bill_detail.id %}" class="btn btn-outline-secondary"><i class="bi bi-eye"></i></a>
       </div>
     </div>
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label for="id_category" class="form-label">Category</label>
       <input type="text" class="form-control" id="id_category" value="{{ details.category }}" disabled readonly>
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col">
+  <div class="row mb-3">
+    <div class="col-sm-12 col-md-12">
       <label class="form-label">Description</label>
       <textarea class="form-control" rows="3" disabled readonly>{{ details.description }}</textarea>
     </div>
   </div>
 
   <div class="row mb-3">
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label class="form-label">Payment Schedule</label>
       <input type="text" class="form-control" value="{{ details.is_recurring }}" disabled readonly>
     </div>
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label class="form-label">Due Date</label>
       <input type="date" class="form-control" value="{{ bills.due_date|date:'Y-m-d' }}" disabled readonly>
     </div>
   </div>
   
   <div class="row mb-3">
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label class="form-label">Status</label>
       <div class="input-group">
         <input type="text" class="form-control" value="{{ bills.payment_status }}" disabled readonly>
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#paymenthistory">
+        <button type="button" class="btn btn-outline-secondary rounded-end" data-bs-toggle="modal" data-bs-target="#paymenthistory">
           History
         </button>
 
@@ -99,7 +95,7 @@
               </div>
               <div class="modal-body">
 
-                <div class="row table-responsive mb-3">
+                <div class="row mb-3 table-responsive">
                   <table class="table table-hover table-striped text-center align-middle">
                     <thead class="table-primary">
                       <tr>
@@ -136,7 +132,7 @@
 
       </div>
     </div>
-    <div class="col">
+    <div class="col-sm-12 col-md-6 mb-2">
       <label class="form-label">Total Amount</label>
       <div class="input-group">
         <span class="input-group-text">&#8369;</span>
@@ -145,8 +141,8 @@
     </div>
   </div>
 
-  <div class="row mb-3 mt-3 d-flex justify-content-center">
-    <div class="col-6 text-center">
+  <div class="row mb-3 d-flex justify-content-center">
+    <div class="col-sm-12 col-md-6 mb-2 text-center">
       <label class="form-label"><strong>Balance</strong></label>
       <div class="input-group">
         <span class="input-group-text">&#8369;</span>
@@ -155,9 +151,9 @@
     </div>
   </div>
 
-  <div class="row text-center">
-    <div class="col">
-      <a href="{% url 'pay-bill' bills.id bills.bill_detail.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}">Pay</a>
+  <div class="row mb-3 text-center">
+    <div class="col d-grid gap-2 d-md-flex justify-content-md-end">
+      <a href="{% url 'pay-bill' bills.id bills.bill_detail.id %}" class="btn btn-info {% if bills.amount_payable <= 0 %} disabled {% endif %}"><i class="bi bi-wallet"></i> Pay</a>
     </div>
   </div>
 
