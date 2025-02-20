@@ -103,7 +103,7 @@ class BillCategory(models.Model):
 class BillDetail(models.Model):
   user = models.ForeignKey(User, on_delete=models.CASCADE)
   name = models.CharField(max_length=30)
-  category = models.ForeignKey(Category, on_delete=models.CASCADE)
+  category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
   description = models.TextField(null=True, blank=True)
   is_recurring = models.CharField(max_length=15,
                                   choices=[('one-time', 'One-Time'),
