@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row mt-4">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-sm-12 col-md-6 mb-2">
+        <label for="id_import_bills" class="form-label"><strong>Import Bills Data</strong></label>
+        <input type="file" class="form-control" id="id_import_bills" name="import_bills">
+        {% if messages %}
+          {% for message in messages %}
+            <p style="color: red;">
+              {{ message }}
+            </p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 mb-2">
+        <button type="submit" class="btn btn-success float-end"><i class="bi bi-file-earmark-arrow-up"></i> Import</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% endblock content %}

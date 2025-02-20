@@ -2,7 +2,7 @@ from django.urls import path
 from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, CreateBill, UpdateBill, PayBill, BillView, DeleteBillDetail, CreateCategory
 from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd, MoneyAccountView, MoneyAccountDelete, MoneyAccountUpdate
 from .views import MoneyTransfer, TransactionHistory, AccountGroupList, AccountGroupAdd, AccountGroupDelete, AccountGroupView, AccountGroupEdit, MoneyIncome
-from .views import MoneyExpense
+from .views import MoneyExpense, AdminView
 
 from django.contrib.auth.views import LogoutView
 
@@ -37,4 +37,5 @@ urlpatterns = [
     path('money-tracker/account-groups/<int:pk>/delete', AccountGroupDelete.as_view(), name='money-account-group-delete'),
     path('money-tracker/accounts/income', MoneyIncome.as_view(), name='money-accounts-income'),
     path('money-tracker/accounts/expense', MoneyExpense.as_view(), name='money-accounts-expense'),
+    path('profile/admin/', AdminView.as_view(), name='profile-admin'),
 ]
