@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Subquery, OuterRef, Exists
-from billstracker.models import MoneyCategory ,User
+from billstracker.models import Category ,User
 
 class Command(BaseCommand):
     help = "Add Income and Expense Category for each available user."
@@ -13,7 +13,7 @@ class Command(BaseCommand):
       total_created = 0
       for user in users:
         for category_name in income_categories:
-          obj, created = MoneyCategory.objects.get_or_create(
+          obj, created = Category.objects.get_or_create(
             user = user,
             name = category_name,
             category_type = 'Income'
@@ -23,7 +23,7 @@ class Command(BaseCommand):
             total_created += 1
             
         for category_name in expense_categories:
-          obj, created = MoneyCategory.objects.get_or_create(
+          obj, created = Category.objects.get_or_create(
             user = user,
             name = category_name,
             category_type = 'Expense'
