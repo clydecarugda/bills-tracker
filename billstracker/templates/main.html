@@ -31,7 +31,7 @@
               <a class="nav-link {% if request.path|slice:'0:14' == '/bills-tracker' %}active{% endif %}" aria-current="page" href="{% url 'bills-tracker' %}"><i class="bi bi-receipt-cutoff"></i> Bills</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path|slice:'0:14' == '/money-tracker' %}active{% endif %}" aria-current="page" href="{% url 'money-dashboard' %}"><i class="bi bi-cash-stack"></i> Money</a>
+              <a class="nav-link {% if request.path|slice:'0:14' == '/money-tracker' %}active{% endif %}" aria-current="page" href="{% url 'money-accounts' %}"><i class="bi bi-cash-stack"></i> Money</a>
             </li>
           </ul>
 
