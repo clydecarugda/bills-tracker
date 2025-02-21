@@ -639,8 +639,15 @@ class MoneyAccountAdd(LoginRequiredMixin, CreateView):
   redirect_field_name = 'redirect_to'
   success_url = reverse_lazy('money-accounts')
   
+  def get_form(self, form_class = None):
+    form =  super().get_form(form_class)
+    form.fields['account_group'].queryset = AccountGroup.objects.filter(user=self.request.user)
+    
+    return form
+  
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
+      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
 
       return context
   
@@ -719,6 +726,19 @@ class MoneyAccountUpdate(LoginRequiredMixin, UpdateView):
             'description']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
+  
+  def get_form(self, form_class = None):
+    form = super().get_form(form_class)
+    form.fields['account_group'].queryset = AccountGroup.objects.filter(user=self.request.user)
+    
+    return form
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
+      
+      return context
+  
   
   def get_object(self, queryset = None):
     obj = super().get_object(queryset)
