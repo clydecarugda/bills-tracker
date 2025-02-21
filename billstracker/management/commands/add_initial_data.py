@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
       income_categories = ['Salary', 'Petty Cash', 'Bonus']
-      expense_categories = ['Food', 'Pets', 'Transport', 'Apparel', 'Household', 'Gift']
+      expense_categories = ['Food', 'Pets', 'Transport', 'Apparel', 'Household', 'Gift', 'Utility', 'Loan', 'Subscription']
       payment_status = ['Pending', 'Paid', 'Partially Paid']
       users = User.objects.all()
 
