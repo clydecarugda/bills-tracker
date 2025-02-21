@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.views import View
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
@@ -16,8 +17,10 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib.auth import login, authenticate, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+
 import django.contrib.auth.password_validation as password_validation
-import re
+import re, csv
 
 from dateutil.relativedelta import relativedelta
 
@@ -614,10 +617,10 @@ class MoneyAccountList(LoginRequiredMixin, ListView):
       account_groups = AccountGroup.objects.filter(user=user)
       money_accounts = self.model.objects.filter(user=user)
       
-      account_group_total = account_groups.model.objects.annotate(total_amount=Sum('moneyaccount__amount'))
+      account_group_total = account_groups.annotate(total_amount=Sum('moneyaccount__amount'))
       
       for group in account_group_total:
-        group.accounts = money_accounts.model.objects.filter(account_group=group)
+        group.accounts = money_accounts.filter(account_group=group)
       
       context['money_account_list'] = money_accounts
       context['account_groups'] = account_group_total
@@ -636,8 +639,15 @@ class MoneyAccountAdd(LoginRequiredMixin, CreateView):
   redirect_field_name = 'redirect_to'
   success_url = reverse_lazy('money-accounts')
   
+  def get_form(self, form_class = None):
+    form =  super().get_form(form_class)
+    form.fields['account_group'].queryset = AccountGroup.objects.filter(user=self.request.user)
+    
+    return form
+  
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
+      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
 
       return context
   
@@ -716,6 +726,19 @@ class MoneyAccountUpdate(LoginRequiredMixin, UpdateView):
             'description']
   login_url = 'login'
   redirect_field_name = 'redirect_to'
+  
+  def get_form(self, form_class = None):
+    form = super().get_form(form_class)
+    form.fields['account_group'].queryset = AccountGroup.objects.filter(user=self.request.user)
+    
+    return form
+  
+  def get_context_data(self, **kwargs):
+      context = super().get_context_data(**kwargs)
+      context['account_group'] = AccountGroup.objects.filter(user=self.request.user)
+      
+      return context
+  
   
   def get_object(self, queryset = None):
     obj = super().get_object(queryset)
@@ -1014,6 +1037,64 @@ class AccountGroupDelete(LoginRequiredMixin, DeleteView):
       raise Http404("Product does not exist or you do not have permission to view it.")
     
     return obj
+  
+  
+class AdminView(LoginRequiredMixin, View):
+  template_name = 'admin.html'
+  
+  def get(self, request):
+    return render(request, self.template_name)
+  
+  def post(self, request):
+    uploaded_file = request.FILES.get('import_bills')
+    total_imported = 0
+    
+    if not uploaded_file:
+      messages.error(request, 'No file selected.')
+      
+      return redirect('profile-admin')
+    elif not uploaded_file.name.endswith('.csv'):
+      messages.error(request, 'File type not supported.')
+      
+      return redirect('profile-admin')
+    elif uploaded_file.name.endswith('.csv'):
+      try:
+        decoded_file = uploaded_file.read().decode("utf-8").splitlines()
+        reader = csv.reader(decoded_file)
+        
+        next(reader, None)  
+        for row in reader:
+          user_id, name, category, description, is_recurring, due_date, amount, amount_payable, payment_status = row
+          
+          user = User.objects.get(id=user_id)
+          category_instance, _ = Category.objects.get_or_create(user=user, name=category, category_type='Expense')
+          payment_status_instance, _ = PaymentStatus.objects.get_or_create(name=payment_status)
+          
+          bill_detail, _ = BillDetail.objects.get_or_create(
+            user = user,
+            name = name,
+            category = category_instance,
+            description = description,
+            is_recurring = is_recurring
+          )
+          
+          Bill.objects.create(
+            user = user,
+            bill_detail = bill_detail,
+            due_date = due_date,
+            amount = amount,
+            amount_payable = amount_payable,
+            payment_status = payment_status_instance
+          )
+          
+          total_imported += 1
+      
+      except Exception as e:
+        messages.error(request, f"Error processing row {row}: {str(e)}")
+        
+    messages.success(request, f"Successfully imported {total_imported} bills.")
+      
+    return redirect('profile-admin')
   
       
 class TransactionHistoryLogger:

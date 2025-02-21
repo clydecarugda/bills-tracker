@@ -17,7 +17,7 @@ db.sqlite3
 *.tmp
 
 # Ignore settings file
-settings.py
+*/settings.py
 
 # Ignore vscode debugging files
 .vscode/
