@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Subquery, OuterRef, Exists
-from billstracker.models import Category ,User, PaymentStatus
+from billstracker.models import Category ,User, PaymentStatus, AccountGroup
 
 class Command(BaseCommand):
     help = "Add Initial data for Category, Payment Status"
@@ -9,6 +9,7 @@ class Command(BaseCommand):
       income_categories = ['Salary', 'Petty Cash', 'Bonus']
       expense_categories = ['Food', 'Pets', 'Transport', 'Apparel', 'Household', 'Gift', 'Utility', 'Loan', 'Subscription']
       payment_status = ['Pending', 'Paid', 'Partially Paid']
+      account_groups = ['Cash', 'Debit', 'E-Wallet']
       users = User.objects.all()
 
       total_created = 0
@@ -32,6 +33,12 @@ class Command(BaseCommand):
           
           if created:
             total_created += 1
+            
+        for accounts in account_groups:
+          obj, created = AccountGroup.objects.get_or_create(
+            user = user,
+            name = accounts
+          )
             
       for status in payment_status:
         obj, created = PaymentStatus.objects.get_or_create(
