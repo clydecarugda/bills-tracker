@@ -617,10 +617,10 @@ class MoneyAccountList(LoginRequiredMixin, ListView):
       account_groups = AccountGroup.objects.filter(user=user)
       money_accounts = self.model.objects.filter(user=user)
       
-      account_group_total = account_groups.model.objects.annotate(total_amount=Sum('moneyaccount__amount'))
+      account_group_total = account_groups.annotate(total_amount=Sum('moneyaccount__amount'))
       
       for group in account_group_total:
-        group.accounts = money_accounts.model.objects.filter(account_group=group)
+        group.accounts = money_accounts.filter(account_group=group)
       
       context['money_account_list'] = money_accounts
       context['account_groups'] = account_group_total
