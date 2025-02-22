@@ -163,3 +163,15 @@ class UserProfile(models.Model):
   
   def __str__(self):
         return self.user.username
+      
+
+class Feedback(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  name = models.CharField(max_length=50)
+  feedback_message = models.TextField()
+  review_check = models.BooleanField(default=False)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return self.name

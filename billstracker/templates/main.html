@@ -53,6 +53,7 @@
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="{% url 'profile' user.id %}"><i class="bi bi-person"></i> Profile</a></li>
+                <li><a class="dropdown-item" href="{% url 'feedback-new' %}"><i class="bi bi-pencil-square"></i> Feedback</a></li>
                 {% if request.user.is_staff %}
                   <li><a class="dropdown-item" href="{% url 'profile-admin' %}"><i class="bi bi-sliders"></i> Admin</a></li>
                 {% endif %}
