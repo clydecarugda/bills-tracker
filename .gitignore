@@ -26,9 +26,10 @@ db.sqlite3
 # Ignore media files
 media/
 
-# Celery worker log files
+# Celery worker logs and PIDs
 celerybeat-schedule
+celerybeat-schedule-shm
+celerybeat-schedule-wal
 celerybeat.pid
-celerybeat.db
 celeryd.log
 celeryd.pid
