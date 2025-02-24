@@ -5,12 +5,13 @@ from .views import MoneyTransfer, TransactionHistory, AccountGroupList, AccountG
 from .views import MoneyExpense, AdminView, FeedbackCreate
 
 from django.contrib.auth.views import LogoutView
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('login/', LoginPage.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     
-    path('', MainPage.as_view(), name='main'),
+    path('', RedirectView.as_view(url='/bills-tracker/', permanent=False), name='main'),
     path('bills-tracker/', BillList.as_view(), name='bills-tracker'),
     path('bills-tracker/billdetail/<int:pk>', BillDetailView.as_view(), name='billdetail-view'),
     path('bills-tracker/bill/<int:pk>', BillView.as_view(), name='bill-view'),
