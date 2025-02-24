@@ -24,7 +24,7 @@ import re, csv
 
 from dateutil.relativedelta import relativedelta
 
-from .models import BillDetail, Bill, Payment, PaymentStatus, User, AuditLog, AccountGroup, MoneyAccount, Category
+from .models import BillDetail, Bill, Payment, PaymentStatus, User, AuditLog, AccountGroup, MoneyAccount, Category, Feedback
 
 
 class LoginPage(LoginView):
@@ -701,6 +701,7 @@ class MoneyAccountView(LoginRequiredMixin, DetailView):
     
     return obj
   
+  
 class MoneyAccountDelete(LoginRequiredMixin, DeleteView):
   model = MoneyAccount
   context_object_name = 'money_account'
@@ -1095,6 +1096,42 @@ class AdminView(LoginRequiredMixin, View):
     messages.success(request, f"Successfully imported {total_imported} bills.")
       
     return redirect('profile-admin')
+  
+
+class FeedbackCreate(LoginRequiredMixin, CreateView):
+  model = Feedback
+  context_object_name = 'feedback'
+  template_name = 'feedback.html'
+  fields = ['feedback_message']
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get(self, request, *args, **kwargs):
+    previous_url = request.META.get('HTTP_REFERER')
+    
+    if previous_url:
+      request.session['previous_url'] = previous_url
+        
+    return super().get(request, *args, **kwargs)
+  
+  def form_invalid(self, form):
+      response = super().form_invalid(form)
+      response
+  
+  def form_valid(self, form):      
+    name = form.cleaned_data.get('name')
+    submit_type = self.request.POST.get('form-type')
+    
+    if name:
+      form.instance.name = name
+    else:
+      form.instance.name = 'Anonymous'
+             
+    form.instance.user = self.request.user
+    form.save()
+    
+    return HttpResponseRedirect(self.request.session.get('previous_url', reverse('bills-tracker')))
+  
   
       
 class TransactionHistoryLogger:

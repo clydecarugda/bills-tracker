@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .email-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <h2>📢 Hello, {{ username }}!</h2>
+        <p>Your bill <strong>{{ bill_name }}</strong> is due on <strong>{{ due_date }}</strong>. Please make sure to complete the payment on time.</p>
+        <p>
+            <a href="https://app.clydecarugda.com/bills-tracker/bill/pay-bill/{{ bill_id }}/{{ detail_id }}" class="cta-button">Pay Now</a>
+        </p>
+    </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Payment, PaymentStatus, BillDetail, Bill, UserProfile, MoneyAccount, AccountGroup, AuditLog
-from .models import Category, BillCategory
+from .models import Category, BillCategory, Feedback
 
 admin.site.register(Payment)
 admin.site.register(PaymentStatus)
@@ -12,3 +12,4 @@ admin.site.register(MoneyAccount)
 admin.site.register(AuditLog)
 admin.site.register(Category)
 admin.site.register(BillCategory)
+admin.site.register(Feedback)

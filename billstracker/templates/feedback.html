@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% load custom_tags %}
+
+{% block content %}
+
+<div class="row d-flex justify-content-center m-5 p-2 border rounded">
+  <div class="col-sm-12 col-md-12 mb-2">
+    <form method="post" id="id_form_feedback">
+      {% csrf_token %}
+      <div class="row">
+        <input type="hidden" name="form-type" value="send-feedback">
+        <div class="col-sm-12 col-md-12 mb-2">
+          <label for="id_name" class="form-label">Name</label>
+          <input type="text" class="form-control" name="name" id="id_name">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 col-md-12 mb-2">
+          <label for="id_feedback_message" class="form-label">Feedback</label>
+          <textarea class="form-control" name="feedback_message" id="id_feedback_message" rows="8" required></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success float-end"><i class="bi bi-pencil-square"></i> Submit</button>
+    </form>
+  </div>
+</div>
+  
+{% endblock content %}
+  
