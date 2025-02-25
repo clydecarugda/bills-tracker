@@ -38,14 +38,43 @@
           </div>
           <div class="col-sm-12 col-md-6 mb-2">
             <label for="id_category" class="form-label">Category</label>
-            <select class="form-select" name="category" id="id_category">
-              <option selected>---Select Category---</option>
-              {% for category in category_list %}
-              
-                <option value="{{ category.id }}">{{ category.name }}</option>
+            <div class="input-group">
+              <select class="form-select" name="category" id="id_category">
+                <option selected>---Select Category---</option>
+                {% for category in category_list %}
+                
+                  <option value="{{ category.id }}">{{ category.name }}</option>
 
-              {% endfor %}
-            </select>
+                {% endfor %}
+              </select>
+              <!-- Button trigger Category -->
+              <button type="button" class="btn btn-outline-secondary rounded-end" data-bs-toggle="modal" data-bs-target="#newCategory">
+                New
+              </button>
+            </div>
+
+            <!-- Modal Category -->
+            <div class="modal fade" id="newCategory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newCategoryLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="newCategoryLabel">Create New Category</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <input type="hidden" id="csrf_token" value="{{ csrf_token }}">
+                    <label for="categoryName" class="form-label">Category Name</label>
+                    <input type="text" class="form-control" id="categoryName" placeholder="Enter Category Name">
+                    <input type="hidden" id="id_category_type" name="category_type" value="Income">
+                    <div class="invalid-feedback d-block" id="categoryError" style="display: none;"></div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancel</button>
+                    <button type="button" onclick="addCategory()" class="btn btn-success"><i class="bi bi-floppy"></i> Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -72,4 +101,46 @@
     </div>
 </div>
   
+<script>
+  function addCategory() {
+      let categoryName = document.getElementById("categoryName").value;
+      let categoryType = document.getElementById("id_category_type").value;
+      let categoryError = document.getElementById("categoryError");
+
+      fetch("{% url 'create-category' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ name: categoryName, category_type: categoryType }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.id) {
+          let categoryList = document.getElementById("id_category");
+          let newCategory = document.createElement("option");
+          newCategory.value = data.id;
+          newCategory.textContent = data.name;
+          categoryList.appendChild(newCategory);
+          document.getElementById("categoryName").value = "";
+
+          // Close modal
+          let modal = bootstrap.Modal.getInstance(document.getElementById("newCategory"));
+          modal.hide();
+        } else {
+          let categoryInput = document.getElementById("categoryName");
+          categoryInput.classList.add("is-invalid");
+          categoryError.textContent = data.error;
+          categoryError.style.display = "block";
+        }
+      })
+      .catch(error => console.error("Error:", error));
+    }
+
+    function getCSRFToken() {
+      return document.getElementById("csrf_token").value;
+    }
+</script>
+
 {% endblock content %}
