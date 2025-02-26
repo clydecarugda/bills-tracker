@@ -2,6 +2,8 @@
 
 {% block content %}
 
+{% load humanize %}
+
 <div class="row">
   {% include 'money_sidebar.html' %}
 
@@ -21,8 +23,8 @@
             <td>{{ payment.payment_date_time }}</td>
             <td>{{ payment.transaction_type }}</td>
             <td>{{ payment.account.name }}</td>
-            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.amount }}</td>
-            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.fee_amount }}</td>
+            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.amount|intcomma }}</td>
+            <td class="{% if payment.amount < 0 %}text-danger{% endif %}">&#8369; {{ payment.fee_amount|intcomma }}</td>
           </tr>
 
         {% empty %}

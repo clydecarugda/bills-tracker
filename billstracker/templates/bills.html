@@ -2,6 +2,8 @@
 
 {% block content %}
 
+{% load humanize %}
+
   <!-- <div class="row mb-3">
     <div class="col">
       <h2>Bills List</h2>
@@ -83,7 +85,7 @@
             <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.bill_detail.name }}</td>
             <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.bill_detail.category.name }}</td>
             <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>{{ bill.due_date }}</td>
-            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>&#8369; {{ bill.amount_payable }}</td>
+            <td {% if bill.due_date <= datetime_now %}class="text-danger"{% endif %}>&#8369; {{ bill.amount_payable|intcomma }}</td>
             <td class="text-center text-nowrap w-auto">
               <a href="{% url 'bill-view' bill.id %}" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-info-circle"></i></a>
               <a href="{% url 'bill-update' bill.id %}" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-pencil-square"></i></a>

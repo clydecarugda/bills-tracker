@@ -1,6 +1,8 @@
 {% extends 'main.html' %}
 
 {% block content %}
+
+{% load humanize %}
     
 <div class="row mb-3 border border-black rounded p-2 m-3">
 
@@ -28,7 +30,7 @@
               <p>Are you sure you want to delete the following Bill?</p>
               <h6><strong>Bill Name: </strong>{{ details.name }}</h6>
               <h6><strong>Category: </strong>{{ details.category }}</h6>
-              <h6><strong>Amount: </strong>&#8369;{{ bills.amount }}</h6>
+              <h6><strong>Amount: </strong>&#8369;{{ bills.amount|intcomma }}</h6>
             </div>
             <div class="modal-footer">
               <form id="deleteForm" method="POST" action="{% url 'bill-delete' bills.id %}" class="d-inline">
@@ -112,8 +114,8 @@
                       <tr>
                         <td>{{ pay.payment_reference }}</td>
                         <td>{{ pay.payment_type }}</td>
-                        <td>&#8369; {{ pay.amount }}</td>
-                        <td>&#8369; {{ pay.fee_amount }}</td>
+                        <td>&#8369; {{ pay.amount|intcomma }}</td>
+                        <td>&#8369; {{ pay.fee_amount|intcomma }}</td>
                         <td>{{ pay.created_at }}</td>
                       </tr>
                       {% endfor %}
@@ -136,7 +138,7 @@
       <label class="form-label">Total Amount</label>
       <div class="input-group">
         <span class="input-group-text">&#8369;</span>
-        <input type="number" class="form-control" value="{{ bills.amount }}" disabled readonly>
+        <input type="text" class="form-control" value="{{ bills.amount|intcomma }}" disabled readonly>
       </div>
     </div>
   </div>
@@ -146,7 +148,7 @@
       <label class="form-label"><strong>Balance</strong></label>
       <div class="input-group">
         <span class="input-group-text">&#8369;</span>
-        <input type="number" class="form-control" value="{{ bills.amount_payable }}" disabled readonly>
+        <input type="text" class="form-control" value="{{ bills.amount_payable|intcomma }}" disabled readonly>
       </div>
     </div>
   </div>
