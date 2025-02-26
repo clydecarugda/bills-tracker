@@ -1,6 +1,8 @@
 {% extends 'main.html' %}
 
 {% block content %}
+
+{% load humanize %}
     
 <div class="row mb-3">
 
@@ -43,14 +45,14 @@
         <label for="id_amount" class="form-label">Total Amount</label>
         <div class="input-group">
           <span class="input-group-text">&#8369;</span>
-          <input type="number" class="form-control" id="id_amount" value="{{ bill_total_amount }}" readonly>
+          <input type="text" class="form-control" id="id_amount" value="{{ bill_total_amount|intcomma }}" readonly>
         </div>
       </div>
       <div class="col-sm-12 col-md-6 mb-2">
         <label for="id_amount_payable" class="form-label"><strong>Balance</strong></label>
         <div class="input-group">
           <span class="input-group-text">&#8369;</span>
-          <input type="number" class="form-control" id="id_amount_payable" value="{{ bill_total_amount_payable }}" readonly>
+          <input type="text" class="form-control" id="id_amount_payable" value="{{ bill_total_amount_payable|intcomma }}" readonly>
         </div>
       </div>
     </div>
@@ -102,7 +104,7 @@
       <div class="card h-100">
         <div class="card-body">
           <p><strong>Due Date:</strong> {{bill.due_date }}</p>
-          <p><strong>Amount:</strong> {{ bill.amount }}</p>
+          <p><strong>Amount:</strong> &#8369;{{ bill.amount|intcomma }}</p>
           <p><strong>Status:</strong> {{ bill.payment_status }}</p>
         </div>
         <div class="card-footer text-end d-grid gap-2 d-md-flex justify-content-md-end">
@@ -120,7 +122,7 @@
                   <p>Are you sure you want to delete the following Bill?</p>
                   <h6><strong>Bill Name: </strong>{{ bill_detail.name }}</h6>
                   <h6><strong>Category: </strong>{{ bill_detail.category }}</h6>
-                  <h6><strong>Amount: </strong>&#8369;{{ bill.amount }}</h6>
+                  <h6><strong>Amount: </strong>&#8369;{{ bill.amount|intcomma }}</h6>
                 </div>
                 <div class="modal-footer">
                   <form id="deleteForm" method="POST" action="{% url 'bill-delete' bill.id %}" class="d-inline">

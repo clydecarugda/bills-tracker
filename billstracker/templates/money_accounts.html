@@ -2,6 +2,8 @@
 
 {% block content %}
 
+{% load humanize %}
+
 <div class="row">
   {% include 'money_sidebar.html' %}
 
@@ -18,7 +20,7 @@
         <thead>
           <tr>
             <th>{{ group.name }}</th>
-            <th class="text-end{% if account.amount < 0 %} text-danger{% else %} text-success{% endif %}">&#8369; {{ group.total_amount|default:0 }}</th>
+            <th class="text-end{% if account.amount < 0 %} text-danger{% else %} text-success{% endif %}">&#8369; {{ group.total_amount|default:0|intcomma }}</th>
           </tr>
         </thead>
         <tbody class="table-group-divider">
@@ -26,7 +28,7 @@
 
             <tr>
               <td class="w-50{% if account.amount < 0 %} text-danger{% endif %}"><a href="{% url 'money-accounts-view' account.id %}" class="link-body-emphasis text-decoration-none">{{ account.name }}</a></td>
-              <td class="w-50 text-end{% if account.amount < 0 %} text-danger{% endif %}">&#8369; {{ account.amount }}</td>
+              <td class="w-50 text-end{% if account.amount < 0 %} text-danger{% endif %}">&#8369; {{ account.amount|intcomma }}</td>
             </tr>
           
           {% empty %}

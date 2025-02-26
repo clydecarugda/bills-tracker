@@ -2,6 +2,8 @@
 
 {% load custom_tags %}
 
+{% load humanize %}
+
 {% block content %}
 
 <div class="row">
@@ -25,7 +27,7 @@
         <label for="id_amount" class="form-label">Amount</label>
         <div class="input-group">
           <span class="input-group-text">&#8369;</span>
-          <input type="number" step="Any" name="amount" id="id_amount" class="form-control" value="{{ money_account.amount }}" readonly>
+          <input type="text" step="Any" name="amount" id="id_amount" class="form-control" value="{{ money_account.amount|intcomma }}" readonly>
         </div>
       </div>
     </div>
@@ -53,7 +55,7 @@
             <p>Are you sure you want to delete the following Account?</p>
             <h6><strong>Account Name: </strong>{{ money_account.name }}</h6>
             <h6><strong>Account Group: </strong>{{ money_account.account_group }}</h6>
-            <h6><strong>Amount: </strong>&#8369;{{ money_account.amount }}</h6>
+            <h6><strong>Amount: </strong>&#8369;{{ money_account.amount|intcomma }}</h6>
           </div>
           <div class="modal-footer">
             <form id="deleteForm" method="POST" action="{% url 'money-accounts-delete' money_account.id %}" class="d-inline">
