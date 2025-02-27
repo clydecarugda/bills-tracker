@@ -2,18 +2,143 @@
 
 {% block content %}
 
+{% load static %}
 
+{% load humanize %}
 
+<div class="row mt-3">
+  <!-- Left Column: Upcoming Bills & Monthly Expense -->
+  <div class="col-lg-6">
+    
+    <!-- Upcoming Bills -->
+    <div class="card shadow-lg border-0 mb-4" style="height: 50vh;">
+      <div class="card-header bg-danger text-white text-center">
+        <h5 class="mb-0"><i class="bi bi-table"></i> Upcoming Bills</h5>
+      </div>
+      <div class="table-responsive p-1" style="max-height: 40vh; overflow-y: auto;">
+        <table class="table table-sm table-striped">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Bill Name</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Due Date</th>
+            </tr>
+          </thead>
+          <tbody class="table-group-divider">
+            {% for bill in upcoming_bills %}
+              <tr>
+                <td>{{ bill.bill_detail.name }}</td>
+                <td>&#8369; {{ bill.amount|intcomma }}</td>
+                <td>{{ bill.due_date }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-center">No Upcoming Bill</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
 
+    <!-- Monthly Expense Chart -->
+    <div class="card shadow-lg border-0 mb-4">
+      <div class="card-header bg-primary text-white text-center">
+        <h5 class="mb-0"><i class="bi bi-pie-chart-fill"></i> Monthly Expense Breakdown</h5>
+      </div>
+      
+      <div class="card-body">
+        <div class="row align-items-center">
+          <!-- Month Selector -->
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <input type="hidden" id="monthly-expense-url" data-url="{% url 'get-monthly-expense-data' %}">
+            <div class="input-group input-group-sm">
+              <input type="month" class="form-control" id="id_monthly_expense_month" name="monthly_expense_month" value="{{ current_month }}">
+              <button id="id_monthly_expense_month_filter" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+            </div>
+          </div>
+        </div>
 
-<h2>Hello {{ request.user }}</h2>
-<p></p>
-<h5>Welcome to my website.</h5>
-<p>The only page that is currently working is the <a href="{% url 'bills-tracker' %}">Bills Tracker</a> page.</p>
-<p>The website is still in development and more features, pages and functionality will be added in the future</p>
-<p>If you have any request, please feel free to contact the developer of the page or email him at <u>clydeocarugda@gmail.com</u></p>
+        <!-- Chart -->
+        <div class="row">
+          <div class="mt-4">
+            <canvas id="monthlyExpenseBreakdown"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="col-lg-6">
+    <!-- Income vs Expense -->
+    <div class="card shadow-lg border-0 mb-4">
+      <div class="card-header bg-success text-white text-center">
+        <h5 class="mb-0"><i class="bi bi-bar-chart-line-fill"></i> Income vs Expense</h5>
+      </div>
 
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <input type="hidden" id="income-expense-url" data-url="{% url 'get-income-expense-data' %}">
+            <div class="input-group input-group-sm">
+              <input type="month" class="form-control" id="id_income_expense_month" name="income_expense_month" value="{{ current_month }}">
+              <button id="id_income_expense_month_filter" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Income Expense Chart -->
+        <div class="row">
+          <div class="mt-4">
+            <canvas id="incomeExpenseBreakdown"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Trend per Category -->
+    <div class="card shadow-lg border-0 mb-4">
+      <div class="card-header bg-info text-white text-center">
+        <h5 class="mb-0"><i class="bi bi-graph-down"></i> Expense Trend</h5>
+      </div>
+
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <input type="hidden" id="expense-trend-url" data-url="{% url 'get-expense-trend-data' %}">
+            <div class="input-group input-group-sm">
+              <select class="form-select" id="id_expense_trend_selection" name="expense_trend_selection">
+                <option value="daily" selected>Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <button id="id_expense_trend_filter" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+          <!-- Expense Trend Chart -->
+          <div class="row align-items-center">
+            <div class="mt-4">
+              <canvas id="ExpenseTrendBreakdown"></canvas>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{% static 'billstracker/charts.js' %}" defer></script>
   
 {% endblock content %}
   
