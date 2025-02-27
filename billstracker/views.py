@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django import forms
 from django.db import transaction
 from django.db.models import Sum, F, Q
-from django.db.models.functions import Abs
+from django.db.models.functions import Abs, TruncDate, TruncWeek, TruncMonth, ExtractWeek, ExtractMonth, ExtractYear
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.views import View
@@ -21,7 +21,7 @@ from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
 import django.contrib.auth.password_validation as password_validation
-import re, csv, json
+import re, csv, json, calendar
 
 from dateutil.relativedelta import relativedelta
 
@@ -123,7 +123,69 @@ class IncomeExpenseDataView(LoginRequiredMixin, View):
     }
     
     return JsonResponse(chart_data)
+  
 
+class ExpenseTrendDataView(LoginRequiredMixin, View):
+  def get(self, request, *args, **kwargs):
+    selected_option = request.GET.get('option')
+    date_today = datetime.now().date()
+    
+    filtered_payments = Payment.objects.filter(
+      transaction_type = 'Expense',
+      user=self.request.user
+    )
+    
+    if not selected_option:
+      selected_option == 'daily'
+    
+    if selected_option == 'daily':
+      start_date = date_today - timedelta(days=29)
+      data_grouping = TruncDate('payment_date_time')
+      
+      daily_trends = (
+        filtered_payments.filter(payment_date_time__gte=start_date)
+        .annotate(payment_date=data_grouping)
+        .values("payment_date")
+        .annotate(total_amount=Sum(Abs(F("amount"))))
+        .order_by("payment_date")
+      )
+      
+    elif selected_option == 'weekly':
+      start_date = date_today - timedelta(weeks=9)
+      
+      daily_trends = (
+        filtered_payments.filter(payment_date_time__gte=start_date)
+        .annotate(payment_date=ExtractWeek('payment_date_time'))
+        .values("payment_date")
+        .annotate(total_amount=Sum(Abs(F("amount"))))
+        .order_by("payment_date")
+      )
+      
+    elif selected_option == 'monthly':
+      start_date = date_today - relativedelta(months=11)
+      
+      daily_trends = (
+        filtered_payments.filter(payment_date_time__gte=start_date)
+        .annotate(
+          payment_date=ExtractMonth('payment_date_time'),
+          year=ExtractYear('payment_date_time')
+        )
+        .values('payment_date', 'year')
+        .annotate(total_amount=Sum(Abs(F("amount"))))
+        .order_by('year', 'payment_date')
+      )
+      
+      # for entry in daily_trends:
+      #   entry['payment_date'] = calendar.month_name[entry['payment_date']]
+        
+    
+    chart_data = {
+      'labels': [item['payment_date'] for item in daily_trends],
+      'values': [item['total_amount'] for item in daily_trends]
+    }
+    
+    return JsonResponse(chart_data)
+    
 
 class BillList(LoginRequiredMixin, ListView):
   model = Bill
