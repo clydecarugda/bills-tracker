@@ -40,7 +40,7 @@ $(document).ready(function () {
   };  
 
   var monthlyExpenseChart = new Chart(monthlyExpense, {
-    type: 'pie',
+    type: 'bar',
     data: {
       labels: [],
       datasets: [{
@@ -51,7 +51,12 @@ $(document).ready(function () {
       }]
     },
     options: {
-      responsive: true
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
     },
     plugins: [noDataPlugin]
   });
@@ -90,7 +95,7 @@ $(document).ready(function () {
       }]
     },
     options: {
-      responsive: true
+      responsive: true,
     },
     plugins: [noDataPlugin]
   });
