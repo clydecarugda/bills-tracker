@@ -136,8 +136,6 @@ $(document).ready(function () {
         expenseTrendChart.data.labels = [];
         expenseTrendChart.data.datasets[0].data = [];
 
-        console.log("Expense Trend Data:", data)
-
         expenseTrendChart.data.labels = data.labels;
         expenseTrendChart.data.datasets[0].data = data.values;
         expenseTrendChart.update();
@@ -163,8 +161,6 @@ $(document).ready(function () {
 
   $("#id_expense_trend_filter").click(function () {
     var selectedOption = $("#id_expense_trend_selection").val();
-
-    console.log("Expense Trend Button:", selectedOption)
 
     fetchExpenseTrendData(selectedOption);
   })
