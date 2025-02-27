@@ -44,6 +44,8 @@ class MainPage(LoginRequiredMixin, TemplateView):
 
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
+    context['current_month'] = datetime.now().strftime('%Y-%m')
+    
     user = self.request.user
     date_today = datetime.today().date()
     due_in_seven_days = date_today + timedelta(days=3)
@@ -51,39 +53,77 @@ class MainPage(LoginRequiredMixin, TemplateView):
     bills = Bill.objects.filter(user=user)
     payments = Payment.objects.filter(user=user, transaction_type__in=['Income', 'Expense'])
     
-    # Monthly Expense Breakdown Chart
-    monthly_expense_breakdown = (
-      bills.values('bill_detail__category__name')
-      .annotate(total_amount=Sum('amount'))
-      .order_by('-total_amount')
-    )
-    
-    chart_data_monthly_expense_breakdown = {
-      "labels": [item['bill_detail__category__name'] for item in monthly_expense_breakdown],
-      "values": [item['total_amount'] for item in monthly_expense_breakdown]
-    }
-    
-    # Income vs Expenses
-    income_expense = (
-      payments.values('transaction_type')
-      .annotate(total_amount=Sum(Abs(F('amount')) + Abs(F('fee_amount'))))
-    )
-    
-    chart_data_income_expense = {
-      "labels": [item['transaction_type'] for item in income_expense],
-      "values": [item['total_amount'] for item in income_expense]
-    }
-    
     # Upcoming Bills
     upcoming_bills = bills.filter(Q(due_date__gte=date_today) &
                                   Q(due_date__lte=due_in_seven_days) &
                                   Q(payment_status__name__in=['Pending', 'Partially Paid']))
     
-    context['monthly_expense_breakdown'] = chart_data_monthly_expense_breakdown
-    context['income_expense'] = chart_data_income_expense
     context['upcoming_bills'] = upcoming_bills
     
     return context
+  
+
+class MonthlyExpenseDataView(LoginRequiredMixin, View):
+  def get(self, request, *args, **kwargs):
+    selected_month = request.GET.get('month')
+    
+    if selected_month:
+      year, month = map(int, selected_month.split('-'))
+    else:
+      year = datetime.now().year
+      month = datetime.now().month
+      
+    monthly_bills = Payment.objects.filter(
+      payment_date_time__year=year,
+      payment_date_time__month=month,
+      transaction_type='Expense',
+      user=self.request.user
+    )
+    
+    monthly_expense_breakdown = (
+      monthly_bills.values('category__name')
+      .annotate(total_amount=Sum(Abs(F('amount'))))
+    )
+    
+    total_expense = sum(item['total_amount'] for item in monthly_expense_breakdown) or 1
+    
+    chart_data = {
+      'labels': [item['category__name'] for item in monthly_expense_breakdown],
+      'values': [round((item['total_amount'] / total_expense) * 100, 2) for item in monthly_expense_breakdown]
+    }
+    
+    return JsonResponse(chart_data)
+  
+
+class IncomeExpenseDataView(LoginRequiredMixin, View):
+  def get(self, request, *args, **kwargs):
+    selected_month = request.GET.get('month')
+    
+    if selected_month:
+      year, month = map(int, selected_month.split('-'))
+    else:
+      year = datetime.now().year
+      month = datetime.now().month
+    
+    filtered_payments = Payment.objects.filter(
+      payment_date_time__year = year,
+      payment_date_time__month = month,
+      transaction_type__in=['Income', 'Expense'],
+      user=self.request.user
+    )
+    
+    income_expense = (
+      filtered_payments.values('transaction_type')
+      .annotate(total_amount=Sum(Abs(F('amount')) + Abs(F('fee_amount'))))
+    )
+    
+    chart_data = {
+      'labels': [item['transaction_type'] for item in income_expense],
+      'values': [item['total_amount'] for item in income_expense]
+    }
+    
+    return JsonResponse(chart_data)
+
 
 class BillList(LoginRequiredMixin, ListView):
   model = Bill
@@ -190,62 +230,6 @@ class CreateBill(LoginRequiredMixin, CreateView):
       )
           
     return super().form_valid(form)
-  
-  
-# class CreateCategory(LoginRequiredMixin, CreateView):
-#   model = Category
-#   template_name = 'new_category.html'
-#   context_object_name = 'category'
-#   fields = ['name', 'category_type']
-#   login_url = 'login'
-#   redirect_field_name = 'redirect_to'
-#   success_url = reverse_lazy('create-bill')
-      
-#   def get_context_data(self, **kwargs):
-#       context = super().get_context_data(**kwargs)
-
-#       return context
-    
-#   def get(self, request, *args, **kwargs):
-#     previous_url = request.META.get('HTTP_REFERER')
-    
-#     if previous_url:
-#       request.session['previous_url'] = previous_url
-        
-#     return super().get(request, *args, **kwargs)
-    
-#   def form_valid(self, form):
-#     user = self.request.user
-#     name = form.cleaned_data.get('name')
-#     category_type = form.cleaned_data.get('category_type')
-#     previous_url = self.request.session.get('previous_url', reverse('bills-tracker') )
-    
-#     check_duplicate = self.model.objects.filter(user=user, name=name, category_type=category_type).exists()
-    
-#     if check_duplicate:
-#       form.add_error('name', f"The category '{name}' already exists!")
-      
-#       return self.form_invalid(form)
-    
-#     else:
-#       with transaction.atomic():
-#         form.instance.user = user
-#         form.save()
-      
-#         AuditLogger.log_audit(
-#             user = user,
-#             action_type = 'New Category',
-#             model_affected = 'Category',
-#             record_id = form.instance.id,
-#             old_value = '',
-#             new_value = name,
-#             request = self.request,
-#             action_description = 'Create New Category'
-#           )
-        
-#         return HttpResponseRedirect(self.request.session.get('previous_url', reverse('bills-tracker')))
-
-#     return super().form_valid(form)
    
 
 class CreateCategory(LoginRequiredMixin, CreateView):
@@ -845,8 +829,8 @@ class MoneyTransfer(LoginRequiredMixin, CreateView):
   def form_valid(self, form):
       sender_id = self.request.POST.get('sender_account')
       receiver_id = self.request.POST.get('receiver_account')
-      amount = float(form.cleaned_data.get('amount'))
-      fee_amount = float(form.cleaned_data.get('fee_amount'))
+      amount = form.cleaned_data.get('amount')
+      fee_amount = form.cleaned_data.get('fee_amount')
       payment_datetime = form.cleaned_data.get('payment_date_time')
       note = form.cleaned_data.get('note')
       
