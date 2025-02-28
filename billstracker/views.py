@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.utils.timezone import now
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django import forms
 from django.db import transaction
 from django.db.models import Sum, F, Q
@@ -84,8 +84,6 @@ class MonthlyExpenseDataView(LoginRequiredMixin, View):
       monthly_bills.values('category__name')
       .annotate(total_amount=Sum(Abs(F('amount'))))
     )
-    
-    total_expense = sum(item['total_amount'] for item in monthly_expense_breakdown) or 1
     
     chart_data = {
       'labels': [item['category__name'] for item in monthly_expense_breakdown],
@@ -187,28 +185,66 @@ class ExpenseTrendDataView(LoginRequiredMixin, View):
     return JsonResponse(chart_data)
     
 
-class BillList(LoginRequiredMixin, ListView):
-  model = Bill
+class BillList(LoginRequiredMixin, TemplateView):
   template_name = 'bills.html'
-  context_object_name = 'bills'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
     
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    bills = self.model.objects.filter(user=self.request.user)
-    context['bills'] = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
-    context['datetime_now'] = datetime.now().date()
-    context['date_month_now'] = datetime.now().month
-    context['date_year_now'] = datetime.now().year
-    
-    # search_input = self.request.GET.get('search_area') or ''
-    # context['selected_month'] = self.request.GET.get('selected_month', None)
-    # if search_input:
-    #   context['bills'] = context['bills'].filter(bill_detail__name__icontains=search_input)
+    context['current_month'] = datetime.now().strftime('%Y-%m')
     
     return context
- 
+  
+  
+class GetBillsList(LoginRequiredMixin, ListView):
+  model = Bill
+  context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get(self, request, *args, **kwargs):
+    selected_month = request.GET.get('month_filter')
+    search_input = request.GET.get('search_input')
+    show_all_bills = request.GET.get('show_all_bills')
+    bills_data = []
+    
+    if selected_month:
+      year, month = map(int, selected_month.split('-'))
+    else:
+      year = datetime.now().year
+      month = datetime.now().month
+    
+    if show_all_bills == 'true':
+      bills = self.model.objects.filter(user=self.request.user,
+                                        bill_detail__name__icontains=search_input)
+    else:
+      bills = self.model.objects.filter(user=self.request.user,
+                                        due_date__year=year,
+                                        due_date__month=month,
+                                        bill_detail__name__icontains=search_input)
+    
+    bills_filtered = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
+    
+    for bill in bills_filtered:
+      due_status = ''
+      if bill.due_date < date.today():
+        due_status = 'overdue'
+      elif bill.due_date == date.today():
+        due_status = 'due_today'
+        
+      bills_data.append({
+        'id': bill.id,
+        'detail_id': bill.bill_detail.id,
+        'name': bill.bill_detail.name,
+        'category': bill.bill_detail.category.name,
+        'due_date': bill.due_date,
+        'amount': bill.amount_payable,
+        'due_status': due_status
+      })
+    
+    return JsonResponse({"bills": bills_data})
+    
 
 class CreateBill(LoginRequiredMixin, CreateView):
   model = Bill
@@ -1038,8 +1074,10 @@ class MoneyExpense(LoginRequiredMixin, CreateView):
 
 class TransactionHistory(LoginRequiredMixin, ListView):
   model = Payment
-  context_object_name = 'payments'
   template_name = 'money_transaction_history.html'
+  context_object_name = 'payments'
+  ordering = ['-payment_date_time']
+  paginate_by = 10
   login_url = 'login'
   redirect_field_name = 'redirect_to'
 
