@@ -185,28 +185,52 @@ class ExpenseTrendDataView(LoginRequiredMixin, View):
     return JsonResponse(chart_data)
     
 
-class BillList(LoginRequiredMixin, ListView):
-  model = Bill
+class BillList(LoginRequiredMixin, TemplateView):
   template_name = 'bills.html'
-  context_object_name = 'bills'
   login_url = 'login'
   redirect_field_name = 'redirect_to'
     
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
-    bills = self.model.objects.filter(user=self.request.user)
-    context['bills'] = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
-    context['datetime_now'] = datetime.now().date()
-    context['date_month_now'] = datetime.now().month
-    context['date_year_now'] = datetime.now().year
-    
-    # search_input = self.request.GET.get('search_area') or ''
-    # context['selected_month'] = self.request.GET.get('selected_month', None)
-    # if search_input:
-    #   context['bills'] = context['bills'].filter(bill_detail__name__icontains=search_input)
+    context['current_month'] = datetime.now().strftime('%Y-%m')
     
     return context
- 
+  
+  
+class GetBillsList(LoginRequiredMixin, ListView):
+  model = Bill
+  context_object_name = 'bills'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get(self, request, *args, **kwargs):
+    selected_month = request.GET.get('month_filter')
+    search_input = request.GET.get('search_input')
+    show_all_bills = request.GET.get('show_all_bills')
+    
+    if selected_month:
+      year, month = map(int, selected_month.split('-'))
+    else:
+      year = datetime.now().year
+      month = datetime.now().month
+    
+    if show_all_bills == 'true':
+      bills = self.model.objects.filter(user=self.request.user,
+                                        bill_detail__name__icontains=search_input)
+    else:
+      bills = self.model.objects.filter(user=self.request.user,
+                                        due_date__year=year,
+                                        due_date__month=month,
+                                        bill_detail__name__icontains=search_input)
+    
+    bills_filtered = bills.exclude(payment_status=PaymentStatus.objects.get(name='Paid'))
+    bills_list = bills_filtered.values('id', 'bill_detail__name',
+                                       'bill_detail__category__name', 
+                                       'due_date', 'amount_payable',
+                                       'bill_detail__id')
+    
+    return JsonResponse(list(bills_list), safe=False)
+    
 
 class CreateBill(LoginRequiredMixin, CreateView):
   model = Bill
@@ -1036,8 +1060,10 @@ class MoneyExpense(LoginRequiredMixin, CreateView):
 
 class TransactionHistory(LoginRequiredMixin, ListView):
   model = Payment
-  context_object_name = 'payments'
   template_name = 'money_transaction_history.html'
+  context_object_name = 'payments'
+  ordering = ['-payment_date_time']
+  paginate_by = 10
   login_url = 'login'
   redirect_field_name = 'redirect_to'
 

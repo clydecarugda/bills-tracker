@@ -3,6 +3,7 @@ from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, Cr
 from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd, MoneyAccountView, MoneyAccountDelete, MoneyAccountUpdate
 from .views import MoneyTransfer, TransactionHistory, AccountGroupList, AccountGroupAdd, AccountGroupDelete, AccountGroupView, AccountGroupEdit, MoneyIncome
 from .views import MoneyExpense, AdminView, FeedbackCreate, MonthlyExpenseDataView, IncomeExpenseDataView, ExpenseTrendDataView
+from .views import GetBillsList
 
 from django.contrib.auth.views import LogoutView
 from django.views.generic.base import RedirectView
@@ -13,6 +14,7 @@ urlpatterns = [
     path('', MainPage.as_view(), name='main'),
     
     path('bills-tracker/', BillList.as_view(), name='bills-tracker'),
+    path('bills-tracker/get-bills-list-data', GetBillsList.as_view(), name='get-bills-list'),
     path('bills-tracker/billdetail/<int:pk>', BillDetailView.as_view(), name='billdetail-view'),
     path('bills-tracker/bill/<int:pk>', BillView.as_view(), name='bill-view'),
     path('bills-tracker/bill/delete-bill/<int:pk>', DeleteBill.as_view(), name='bill-delete'),
