@@ -85,8 +85,6 @@ class MonthlyExpenseDataView(LoginRequiredMixin, View):
       .annotate(total_amount=Sum(Abs(F('amount'))))
     )
     
-    total_expense = sum(item['total_amount'] for item in monthly_expense_breakdown) or 1
-    
     chart_data = {
       'labels': [item['category__name'] for item in monthly_expense_breakdown],
       'values': [item['total_amount'] for item in monthly_expense_breakdown]

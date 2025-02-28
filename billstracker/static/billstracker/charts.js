@@ -44,7 +44,7 @@ $(document).ready(function () {
     data: {
       labels: [],
       datasets: [{
-        label: 'Monthly Expense',
+        label: '',
         data: [],
         backgroundColor: colorPalette,
         borderWidth: 1
@@ -66,7 +66,7 @@ $(document).ready(function () {
     data: {
       labels: [],
       datasets: [{
-        label: 'Income Expense',
+        label: '',
         data: [],
         backgroundColor: colorPalette,
         borderWidth: 1
@@ -88,7 +88,7 @@ $(document).ready(function () {
     data: {
       labels: [],
       datasets: [{
-        label: 'Expense Trends',
+        label: '',
         data: [],
         backgroundColor: colorPalette,
         borderWidth: 1
