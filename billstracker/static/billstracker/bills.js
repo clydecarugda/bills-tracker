@@ -16,24 +16,32 @@ $(document).ready(function() {
         console.log(data);
 
         if (data.length === 0) {
-          billsTableBody.append("<tr><td colspan='3'>No Bills Avaialble</td></tr>");
+          billsTableBody.append("<tr><td colspan='4'>No Bills Avaialble</td></tr>");
         } else {
-          data.forEach(function (bill) {
-            var formattedAmount = Number(bill.amount_payable).toLocaleString("en-US", {
+          data.bills.forEach(function (bill) {
+            var formattedAmount = Number(bill.amount).toLocaleString("en-US", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2
             });
 
+            var rowClass = "";
+
+            if (bill.due_status === "overdue") {
+              rowClass = "table-danger";
+            } else if (bill.due_status === "due_today") {
+              rowClass = "table-warning";
+            }
+
             var row = `
-              <tr>
-                <td>${bill.bill_detail__name}</td>
-                <td>${bill.bill_detail__category__name}</td>
+              <tr class="${rowClass}">
+                <td>${bill.name}</td>
+                <td>${bill.category}</td>
                 <td>${bill.due_date}</td>
                 <td>&#8369; ${formattedAmount}</td>
                 <td>
                   <a href="/bills-tracker/bill/${bill.id}" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-info-circle"></i></a>
                   <a href="/bills-tracker/bill/update-bill/${bill.id}" class="btn btn-outline-success btn-sm me-1"><i class="bi bi-pencil-square"></i></a>
-                  <a href="/bills-tracker/bill/pay-bill/${bill.id}/${bill.bill_detail__id}" class="btn btn-outline-warning btn-sm me-1"><i class="bi bi-wallet2"></i></a>
+                  <a href="/bills-tracker/bill/pay-bill/${bill.id}/${bill.detail_id}" class="btn btn-outline-warning btn-sm me-1"><i class="bi bi-wallet2"></i></a>
                 </td>
               </tr>
             `;
