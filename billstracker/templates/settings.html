@@ -1,0 +1,149 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+{% load static %}
+
+<div class="row-cols-sm-1 row-cols-md-3 d-flex justify-content-center m-5 p-2">
+  <div class="col m-1 p-1">
+    <div class="card border rounded shadow-lg">
+      <h5 class="card-header">Categories (Income)<a href="#" class="float-end" data-bs-toggle="modal" data-bs-target="#addCategoryIncomeModal"><i class="bi bi-plus"></i></a></h5>
+      <div class="card-body">
+        <table class="table table-sm table-striped table-hover" id="incomeCategoriesTable">
+          <thead>
+            <th scope="col">Name</th>
+            <th scope="col" class="text-center text-nowrap w-auto"></th>
+          </thead>
+          <tbody class="table-group-divider">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Category Income Modal -->
+  <div class="modal fade" id="addCategoryIncomeModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addCategoryIncomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="addCategoryIncomeModalLabel">Add Category (Income)</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addCategoryIncome">
+            {% csrf_token %}
+            <input type="hidden" id="idCategoryTypeIncome" name="CategoryTypeIncome" value="Income">
+            <label for="idCategoryIncomeName" class="form-label">Category Name</label>
+            <input type="text" class="form-control" id="idCategoryIncomeName" name="CategoryIncomeName" required>
+            <div class="invalid-feedback d-block" id="invalidFeedbackIncome" style="display: none;"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success" id="addCategoryIncomeButton"><i class="bi bi-floppy"></i> Save</button>
+          </form>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col m-1">
+    <div class="card border rounded shadow-lg">
+      <h5 class="card-header">Categories (Expense)<a href="#" class="float-end" data-bs-toggle="modal" data-bs-target="#addCategoryExpenseModal"><i class="bi bi-plus"></i></a></h5>
+      <div class="card-body">
+        <table class="table table-sm" id="expenseCategoriesTable">
+          <thead>
+            <th scope="col">Name</th>
+            <th scope="col" class="text-center text-nowrap w-auto"></th>
+          </thead>
+          <tbody class="table-group-divider">
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Category Expense Modal -->
+<div class="modal fade" id="addCategoryExpenseModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addCategoryExpenseModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="addCategoryExpenseModalLabel">Add Category (Expense)</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addCategoryExpense">
+          {% csrf_token %}
+          <input type="hidden" id="idCategoryTypeExpense" name="CategoryTypeExpense" value="Expense">
+          <label for="idCategoryExpenseName" class="form-label">Category Name</label>
+          <input type="text" class="form-control" id="idCategoryExpenseName" name="CategoryExpenseName" required>
+          <div class="invalid-feedback d-block" id="invalidFeedbackExpense" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-success" id="addCategoryExpenseButton"><i class="bi bi-floppy"></i> Save</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="editCategoryModalLabel">Edit Category</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editCategoryForm">
+          {% csrf_token %}
+          <input type="hidden" id="categoryId">
+          <input type="hidden" id="categoryType">
+          <div class="mb-3">
+            <label for="categoryName" class="form-label">Category Name</label>
+            <input type="text" class="form-control" id="categoryName" required>
+            <div class="invalid-feedback d-block" id="categoryError" style="display: none;"></div>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button type="submit" class="btn btn-success" id="saveCategoryButton"><i class="bi bi-floppy"></i> Save Changes</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalButton">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteCategoryModalLabel">Delete Category</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="deleteCategoryForm">
+          {% csrf_token %}
+          <input type="hidden" id="deleteCategoryId">
+          <input type="hidden" id="deleteCategoryType">
+          <p>Are you sure you want to delete <strong id="deleteCategoryName"></strong>?</p>
+          <div class="invalid-feedback d-block" id="deleteCategoryError" style="display: none;"></div>
+      </div>
+      <div class="modal-footer">
+          <button type="submit" class="btn btn-danger" id="deleteCategoryButton"><i class="bi bi-trash"></i> Delete</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalButton"><i class="bi bi-x-lg"></i> Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'billstracker/categories.js' %}" defer></script>
+  
+{% endblock content %}
+  
