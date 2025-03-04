@@ -1341,7 +1341,7 @@ class AdminView(LoginRequiredMixin, View):
     return redirect('profile-admin')
   
 
-class FeedbackCreate(LoginRequiredMixin, CreateView):
+class Feedback(LoginRequiredMixin, TemplateView):
   model = Feedback
   context_object_name = 'feedback'
   template_name = 'feedback.html'
@@ -1349,33 +1349,39 @@ class FeedbackCreate(LoginRequiredMixin, CreateView):
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
-  def get(self, request, *args, **kwargs):
-    previous_url = request.META.get('HTTP_REFERER')
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
     
-    if previous_url:
-      request.session['previous_url'] = previous_url
-        
-    return super().get(request, *args, **kwargs)
-  
-  def form_invalid(self, form):
-      response = super().form_invalid(form)
-      response
-  
-  def form_valid(self, form):      
-    name = form.cleaned_data.get('name')
-    submit_type = self.request.POST.get('form-type')
+    user = self.request.user
+    user_firstname = user.first_name
     
-    if name:
-      form.instance.name = name
+    if user_firstname:
+      context['u_firstname'] = user_firstname
     else:
-      form.instance.name = 'Anonymous'
-             
-    form.instance.user = self.request.user
-    form.save()
+      context['u_firstname'] = None
     
-    return HttpResponseRedirect(self.request.session.get('previous_url', reverse('bills-tracker')))
+    context['feedbacks'] = self.model.objects.filter(user=user)
+    context['is_admin'] = user.is_staff
+    
+    return context
   
   
+class AddFeedback(LoginRequiredMixin, View):
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def post(self, request, *args, **kwargs):
+    data = json.loads(request.body)
+    name = data.get('name', '').strip()
+    message = data.get('message', '').strip()
+    
+    if not name or not message:
+      return JsonResponse({'success': False, 'error': 'Invalid Name or Message!'}, status=400)
+    
+    feedback = Feedback.model.objects.create(user=self.request.user, name=name, feedback_message=message)
+    
+    return JsonResponse({'success': True, 'message': feedback.feedback_message})
+
       
 class TransactionHistoryLogger:
   @staticmethod

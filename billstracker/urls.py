@@ -2,7 +2,7 @@ from django.urls import path
 from .views import LoginPage, MainPage, BillList, BillDetailView, DeleteBill, CreateBill, UpdateBill, PayBill, BillView, DeleteBillDetail, CreateCategory
 from .views import ProfileView, PasswordChange, AccountView, MoneyAccountList, MoneyAccountAdd, MoneyAccountView, MoneyAccountDelete, MoneyAccountUpdate
 from .views import MoneyTransfer, TransactionHistory, AccountGroupList, AccountGroupAdd, AccountGroupDelete, AccountGroupView, AccountGroupEdit, MoneyIncome
-from .views import MoneyExpense, AdminView, FeedbackCreate, MonthlyExpenseDataView, IncomeExpenseDataView, ExpenseTrendDataView
+from .views import MoneyExpense, AdminView, Feedback, MonthlyExpenseDataView, IncomeExpenseDataView, ExpenseTrendDataView, AddFeedback
 from .views import GetBillsList, UserSetting, GetCategoryListIncome, GetCategoryListExpense, UpdateCategory, DeleteCategory, CreateCategory2
 
 from django.contrib.auth.views import LogoutView
@@ -41,7 +41,7 @@ urlpatterns = [
     path('money-tracker/accounts/expense', MoneyExpense.as_view(), name='money-accounts-expense'),
     
     path('profile/admin/', AdminView.as_view(), name='profile-admin'),
-    path('profile/feedback/new', FeedbackCreate.as_view(), name='feedback-new'),
+    path('feedback/', Feedback.as_view(), name='feedback-new'),
     path('profile/<int:pk>', ProfileView.as_view(), name='profile'),
     path('profile/passwordchange/<int:pk>', PasswordChange.as_view(), name='password-change'),
     path('profile/settings', UserSetting.as_view(), name='user-settings'),
@@ -55,4 +55,6 @@ urlpatterns = [
     path('profile/settings/create-category/', CreateCategory2.as_view(), name='create-category'),
     path('profile/settings/update-category/', UpdateCategory.as_view(), name='update-category'),
     path('profile/settings/delete-category/', DeleteCategory.as_view(), name='delete-category'),
+    
+    path('feedback/add-feedback/', AddFeedback.as_view(), name='add-feedback'),
 ]
