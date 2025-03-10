@@ -2,29 +2,73 @@
 
 {% load custom_tags %}
 
+{% load static %}
+
 {% block content %}
 
-<div class="row d-flex justify-content-center m-5 p-2 border rounded">
-  <div class="col-sm-12 col-md-12 mb-2">
-    <form method="post" id="id_form_feedback">
-      {% csrf_token %}
-      <div class="row">
-        <input type="hidden" name="form-type" value="send-feedback">
-        <div class="col-sm-12 col-md-12 mb-2">
-          <label for="id_name" class="form-label">Name</label>
-          <input type="text" class="form-control" name="name" id="id_name">
-        </div>
+<div class="row d-flex justify-content-center m-5 p-2 border rounded shadow">
+  <table class="table table-striped table-sm caption-top rounded" id="feedbackTable">
+    <caption class="me-1"><button class="btn btn-primary btn-sm float-end" id="idNewFeedbackButton" data-bs-toggle="modal" data-bs-target="#newFeedbackModal">Add Feedback</button></caption>
+    <thead class="table-secondary">
+      <tr>
+        {% if is_admin %}
+          <th scope="col">User</th>
+          <th scope="col">Name</th>
+        {% endif %}
+        <th scope="col">Feedback</th>
+        <th scope="col">Admin Feedback</th>
+        <th scope="col">Reviewed</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider" id="feedbackTableBody">
+      {% for feedback in feedbacks %}
+
+        <tr{% if feedback.review_check %} class="text-decoration-line-through"{% endif %}>
+          {% if is_admin %}
+            <td scope="col">{{ feedback.user.id }}</td>
+            <td scope="col">{{ feedback.name }}</td>
+          {% endif %}
+          <td>{{ feedback.feedback_message }}</td>
+          <td>{{ feedback.admin_feedback }}</td>
+          <td><input type="checkbox" class="form-check-input" id="idFeedbackCheckBox" data-id="{{ feedback.id }}" {% if feedback.review_check %} checked{% endif %} {% if not is_admin %}disabled{% endif %}></td>
+        </tr>
+
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- New Feedback Modal -->
+<div class="modal fade" id="newFeedbackModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="newFeedbackModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="newFeedbackModalLabel">Feedback</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="row">
-        <div class="col-sm-12 col-md-12 mb-2">
-          <label for="id_feedback_message" class="form-label">Feedback</label>
-          <textarea class="form-control" name="feedback_message" id="id_feedback_message" rows="8" required></textarea>
-        </div>
+      <div class="modal-body">
+        <form id="idNewFeedbackForm" class="p-2">
+          {% csrf_token %}
+          <div class="row mb-2">
+            <label for="idFeedbackFormName" class="form-label">Name</label>
+            <input type="text" class="form-control" id="idFeedbackFormName" name="feedbackFormName" required>
+          </div>
+          <div class="row mb-2">
+            <label for="idFeedbackFormMessage" class="form-label">Message</label>
+            <textarea rows="5" class="form-control" id="idFeedbackFormMessage" name="feedbackFormMessage" required></textarea>
+          </div>
+          <div id="feedbackError" style="color: red; display: none;"></div>
       </div>
-      <button type="submit" class="btn btn-success float-end"><i class="bi bi-pencil-square"></i> Submit</button>
-    </form>
+      <div class="modal-footer">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Save</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Close</button>
+      </div>
+    </div>
   </div>
 </div>
+
+<script src="{% static 'billstracker/feedback.js' %}" defer></script>
   
 {% endblock content %}
   

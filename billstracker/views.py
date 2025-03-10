@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.utils.timezone import now
+from django.utils.html import escape
 from datetime import datetime, timedelta, date
 from django import forms
 from django.db import transaction
@@ -352,7 +353,7 @@ class CreateCategory(LoginRequiredMixin, CreateView):
         return JsonResponse({'error': f'Category "{category_name}" already exists!'}, status=400)
     
     return JsonResponse({'error': 'Invalid category name'}, status=400)
-  
+
 
 class BillDetailView(LoginRequiredMixin, DetailView):
   model = BillDetail
@@ -1071,6 +1072,98 @@ class MoneyExpense(LoginRequiredMixin, CreateView):
     return response
   
 
+class UserSetting(LoginRequiredMixin, TemplateView):
+  template_name = 'settings.html'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+
+
+class GetCategoryListIncome(LoginRequiredMixin, ListView):
+  model = Category
+  context_object_name = 'categories'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get(self, request, *args, **kwargs):
+    income_categories = Category.objects.filter(user=self.request.user,
+                                                category_type='Income').order_by('name')
+    
+    data = list(income_categories.values('id', 'name', 'category_type'))
+    
+    return JsonResponse(data, safe=False)
+  
+  
+class GetCategoryListExpense(LoginRequiredMixin, ListView):
+  model = Category
+  context_object_name = 'categories'
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def get(self, request, *args, **kwargs):
+    expense_categories = Category.objects.filter(user=self.request.user,
+                                                category_type='Expense').order_by('name')
+    
+    data = list(expense_categories.values('id', 'name', 'category_type'))
+    
+    return JsonResponse(data, safe=False)
+  
+
+class CreateCategory2(LoginRequiredMixin, View):
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def post(self, request, *args, **kwargs):
+    category_name = escape(request.POST.get('name'))
+    category_type = escape(request.POST.get('type'))
+    
+    if category_name and category_type:
+      category, created = Category.objects.get_or_create(user=self.request.user, name=category_name, category_type=category_type)
+    
+      if created:
+        return JsonResponse({'success': True, 'message': f'Category {category_name} created successfully!'})
+      else:
+        return JsonResponse({'error': f'Category "{category_name}" already exists!'}, status=400)
+    else:
+      return JsonResponse({'error': 'Invalid Category Name'}, status=400)
+  
+  
+class UpdateCategory(LoginRequiredMixin, View):
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def post(self, request, *args, **kwargs):
+    category_id = request.POST.get('id')
+    category_name = request.POST.get('name')
+    category_type = request.POST.get('type')
+    
+    dup_check = Category.objects.filter(name=category_name,
+                                        category_type=category_type).exclude(id=category_id).exists()
+    
+    if dup_check:
+      return JsonResponse({'error': f'Category "{category_name}" already exists!'}, status=400)
+    else:
+      category = get_object_or_404(Category, id=category_id)
+      category.name = category_name
+      category.save()
+    
+    return JsonResponse({'success': True, 'message': 'Category updated successfully!'})
+  
+
+class DeleteCategory(LoginRequiredMixin, View):
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def post(self, request, *args, **kwargs):
+    category_id = request.POST.get('id')
+    
+    if not category_id:
+      return JsonResponse({'success': False, 'error': 'Invalid category ID'}, status=400)
+    
+    category = get_object_or_404(Category, id=category_id, user=self.request.user)
+    category.delete()
+    
+    return JsonResponse({"success": True, "message": "Category deleted successfully!"})
+  
 
 class TransactionHistory(LoginRequiredMixin, ListView):
   model = Payment
@@ -1248,7 +1341,7 @@ class AdminView(LoginRequiredMixin, View):
     return redirect('profile-admin')
   
 
-class FeedbackCreate(LoginRequiredMixin, CreateView):
+class Feedback(LoginRequiredMixin, TemplateView):
   model = Feedback
   context_object_name = 'feedback'
   template_name = 'feedback.html'
@@ -1256,33 +1349,39 @@ class FeedbackCreate(LoginRequiredMixin, CreateView):
   login_url = 'login'
   redirect_field_name = 'redirect_to'
   
-  def get(self, request, *args, **kwargs):
-    previous_url = request.META.get('HTTP_REFERER')
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
     
-    if previous_url:
-      request.session['previous_url'] = previous_url
-        
-    return super().get(request, *args, **kwargs)
-  
-  def form_invalid(self, form):
-      response = super().form_invalid(form)
-      response
-  
-  def form_valid(self, form):      
-    name = form.cleaned_data.get('name')
-    submit_type = self.request.POST.get('form-type')
+    user = self.request.user
+    user_firstname = user.first_name
     
-    if name:
-      form.instance.name = name
+    if user_firstname:
+      context['u_firstname'] = user_firstname
     else:
-      form.instance.name = 'Anonymous'
-             
-    form.instance.user = self.request.user
-    form.save()
+      context['u_firstname'] = None
     
-    return HttpResponseRedirect(self.request.session.get('previous_url', reverse('bills-tracker')))
+    context['feedbacks'] = self.model.objects.filter(user=user)
+    context['is_admin'] = user.is_staff
+    
+    return context
   
   
+class AddFeedback(LoginRequiredMixin, View):
+  login_url = 'login'
+  redirect_field_name = 'redirect_to'
+  
+  def post(self, request, *args, **kwargs):
+    data = json.loads(request.body)
+    name = data.get('name', '').strip()
+    message = data.get('message', '').strip()
+    
+    if not name or not message:
+      return JsonResponse({'success': False, 'error': 'Invalid Name or Message!'}, status=400)
+    
+    feedback = Feedback.model.objects.create(user=self.request.user, name=name, feedback_message=message)
+    
+    return JsonResponse({'success': True, 'message': feedback.feedback_message})
+
       
 class TransactionHistoryLogger:
   @staticmethod

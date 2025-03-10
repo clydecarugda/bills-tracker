@@ -171,6 +171,7 @@ class Feedback(models.Model):
   name = models.CharField(max_length=50)
   feedback_message = models.TextField()
   review_check = models.BooleanField(default=False)
+  admin_feedback = models.TextField(default='')
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
   

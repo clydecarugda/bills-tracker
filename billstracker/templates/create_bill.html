@@ -12,11 +12,11 @@
 
     {% if form.errors %}
       <div class="alert alert-danger">
-          <ul>
-              {% for field, errors in form.errors.items %}
-                  <li>{{ field }}: {{ errors|join:", " }}</li>
-              {% endfor %}
-          </ul>
+        <ul>
+          {% for field, errors in form.errors.items %}
+              <li>{{ field }}: {{ errors|join:", " }}</li>
+          {% endfor %}
+        </ul>
       </div>
     {% endif %}
     
@@ -47,7 +47,7 @@
                   New
                 </button>
 
-                <!-- Modal Category -->
+                <!-- Modal New Category -->
                 <div class="modal fade" id="newCategory" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="newCategoryLabel" aria-hidden="true">
                   <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
@@ -131,10 +131,10 @@
       fetch("{% url 'create-category' %}", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
           "X-CSRFToken": getCSRFToken(),
         },
-        body: JSON.stringify({ name: categoryName, category_type: categoryType }),
+        body: new URLSearchParams({ name: categoryName, category_type: categoryType }),
       })
       .then(response => response.json())
       .then(data => {
