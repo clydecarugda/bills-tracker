@@ -18,7 +18,9 @@ db.sqlite3
 *.pid
 
 # Ignore settings file
+settings.py
 */settings.py
+*/settings/*.py
 
 # Ignore vscode debugging files
 .vscode/
