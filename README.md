@@ -29,7 +29,7 @@ A Django-based financial tracking application that helps users manage their bill
 ---
 
 👨‍💻 Author
-Clyde Carugda
+Clyde Oliver Carugda
 
 📝 License
 This project is licensed under the MIT License.
